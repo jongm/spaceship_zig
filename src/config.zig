@@ -1,3 +1,19 @@
+const obj = @import("objects.zig");
+
+pub const GameStatus = enum {
+    gameplay,
+    pause,
+    game_lost,
+    game_won,
+};
+
+pub const GameState = struct {
+    player: *obj.Player,
+    bullets: []obj.Bullet,
+    enemies: []obj.Enemy,
+    spawn_timer: *u32,
+};
+
 pub const GameConfig = struct {
     screen_width: f32,
     screen_height: f32,

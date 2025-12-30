@@ -1,7 +1,25 @@
 const rl = @import("raylib");
 const obj = @import("objects.zig");
+const con = @import("config.zig");
 const std = @import("std");
 const math = std.math;
+
+pub fn reset_game_status(state: con.GameState) void {
+    for (state.bullets, 0..) |_, i| {
+        state.bullets[i] = .{ .drawable = undefined, .speed = undefined, .active = false };
+    }
+    for (state.enemies, 0..) |_, i| {
+        state.enemies[i] = .{
+            .drawable = undefined,
+            .speed = undefined,
+            .rotation_speed = undefined,
+            .move_delay = undefined,
+            .shoot_delay = undefined,
+            .alive = false,
+        };
+    }
+    state.spawn_timer.* = 0;
+}
 
 pub fn draw_object(object: obj.Drawable) void {
     const x_shift = object.rect_dest.width / 2;

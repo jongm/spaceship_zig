@@ -12,6 +12,7 @@ pub const Player = struct {
     drawable: Drawable,
     speed: f32,
     rotation_speed: f32,
+    skills: []*Skill = undefined,
 
     pub fn init(config: con.PlayerConfig, texture: rl.Texture) @This() {
         const rect_source = rl.Rectangle.init(
@@ -106,4 +107,9 @@ pub const Bullet = struct {
             .active = true,
         };
     }
+};
+
+pub const Skill = struct {
+    cooldown: u32,
+    timer: u32,
 };
