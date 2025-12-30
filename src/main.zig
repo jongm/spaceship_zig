@@ -6,6 +6,7 @@ const uti = @import("utils.zig");
 const game_config = con.GameConfig{
     .screen_width = 1600,
     .screen_height = 1000,
+    .spawn_delay = 150,
 };
 
 const player_config = con.PlayerConfig{
@@ -15,10 +16,23 @@ const player_config = con.PlayerConfig{
     .tex_h = 338,
     .start_x = 820,
     .start_y = 520,
-    .width = 40,
-    .height = 40,
+    .width = 60,
+    .height = 60,
     .speed = 10,
+    .rotation_speed = 20,
+};
+
+const enemy_config = con.EnemyConfig{
+    .tex_x = 0,
+    .tex_y = 0,
+    .tex_w = 402,
+    .tex_h = 272,
+    .width = 90,
+    .height = 61,
+    .speed = 5,
     .rotation_speed = 5,
+    .move_delay = 100,
+    .shoot_delay = 200,
 };
 
 const mybullet = con.BulletConfig{
@@ -52,6 +66,9 @@ pub fn main() !void {
     // player_texture.width = player_config.width;
     // player_texture.height = player_config.height;
 
+    const enemy_texture = try rl.loadTexture("assets/alien1.png");
+    defer rl.unloadTexture(enemy_texture);
+
     const bullets_texture = try rl.loadTexture("assets/bullets1.png");
     defer rl.unloadTexture(bullets_texture);
 
@@ -62,6 +79,13 @@ pub fn main() !void {
     for (&bullets, 0..) |_, i| {
         bullets[i] = .{ .drawable = undefined, .speed = undefined, .active = false };
     }
+
+    var enemies: [20]obj.Enemy = undefined;
+    for (&enemies, 0..) |_, i| {
+        enemies[i] = obj.Enemy.init(enemy_config, enemy_texture, 0.0, 0, 0);
+    }
+
+    var spawn_timer: u32 = 0;
 
     // Main loop
     while (!rl.windowShouldClose()) {
@@ -111,16 +135,57 @@ pub fn main() !void {
                 if (bullet.drawable.rect_dest.x <= 0 or bullet.drawable.rect_dest.x >= game_config.screen_width or bullet.drawable.rect_dest.y <= 0 or bullet.drawable.rect_dest.y >= game_config.screen_height) {
                     bullet.active = false;
                 }
+                for (&enemies) |*enemy| {
+                    if (rl.checkCollisionRecs(enemy.drawable.rect_dest, bullet.drawable.rect_dest)) {
+                        enemy.alive = false;
+                        bullet.active = false;
+                    }
+                }
             }
         }
+
+        spawn_timer += 1;
+        if (spawn_timer >= game_config.spawn_delay) {
+            spawn_timer = 0;
+            for (enemies, 0..) |enemy, i| {
+                if (!enemy.alive) {
+                    const position = uti.get_random_border_position(game_config.screen_width, game_config.screen_height);
+                    var new_enemy = obj.Enemy.init(
+                        enemy_config,
+                        enemy_texture,
+                        0.0,
+                        position.x,
+                        position.y,
+                    );
+                    new_enemy.alive = true;
+                    enemies[i] = new_enemy;
+                    break;
+                }
+            }
+        }
+
+        for (&enemies) |*enemy| {
+            if (enemy.alive) {
+                uti.move_towards(&enemy.drawable, &player.drawable, enemy.speed);
+            }
+        }
+
         // Draw logic
         rl.drawTexture(background_texture, 0, 0, rl.Color.white);
         // rl.drawRectangleRec(player.drawable.rect_dest, rl.Color.white);
 
         uti.draw_object(player.drawable);
 
+        for (enemies) |enemy| {
+            if (enemy.alive) {
+                uti.draw_object(enemy.drawable);
+            }
+        }
+
         for (bullets) |bullet| {
-            uti.draw_object(bullet.drawable);
+            if (bullet.active) {
+                uti.draw_object(bullet.drawable);
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 const rl = @import("raylib");
 const obj = @import("objects.zig");
 const std = @import("std");
+const math = std.math;
 
 pub fn draw_object(object: obj.Drawable) void {
     const x_shift = object.rect_dest.width / 2;
@@ -45,9 +46,44 @@ pub fn update_facing(object: *obj.Drawable, speed: f32, target: f32) void {
 }
 
 pub fn get_angle_movement(speed: f32, angle: f32) rl.Vector2 {
-    const rad = std.math.degreesToRadians(angle - 90.0);
+    const rad = math.degreesToRadians(angle - 90.0);
     return .{
-        .x = std.math.cos(rad) * speed,
-        .y = std.math.sin(rad) * speed,
+        .x = math.cos(rad) * speed,
+        .y = math.sin(rad) * speed,
     };
+}
+
+pub fn get_random_border_position(width: f32, height: f32) rl.Vector2 {
+    const side = rl.getRandomValue(0, 1); // 0 is X, 1 is Y
+    const other = rl.getRandomValue(0, 1); // 0 is top/left, 1 is bot/right
+    const width_int: i32 = @intFromFloat(width);
+    const height_int: i32 = @intFromFloat(height);
+
+    if (side == 0) {
+        const x: f32 = @floatFromInt(rl.getRandomValue(0, width_int));
+        if (other == 0) {
+            return .{ .x = x, .y = 0 };
+        } else {
+            return .{ .x = x, .y = height };
+        }
+    } else {
+        const y: f32 = @floatFromInt(rl.getRandomValue(0, height_int));
+        if (other == 0) {
+            return .{ .x = 0, .y = y };
+        } else {
+            return .{ .x = width, .y = y };
+        }
+    }
+}
+
+pub fn move_towards(object: *obj.Drawable, target: *obj.Drawable, speed: f32) void {
+    const dif_x = object.rect_dest.x - target.rect_dest.x;
+    const dif_y = object.rect_dest.y - target.rect_dest.y;
+
+    const angle: f32 = math.radiansToDegrees(math.atan2(dif_y, dif_x)) - 90;
+
+    const move = get_angle_movement(speed, angle);
+
+    object.rect_dest.x += move.x;
+    object.rect_dest.y += move.y;
 }
