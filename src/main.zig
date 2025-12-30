@@ -2,6 +2,7 @@ const rl = @import("raylib");
 const con = @import("config.zig");
 const obj = @import("objects.zig");
 const uti = @import("utils.zig");
+const std = @import("std");
 
 const game_config = con.GameConfig{
     .screen_width = 1600,
@@ -82,7 +83,14 @@ pub fn main() !void {
 
     var enemies: [20]obj.Enemy = undefined;
     for (&enemies, 0..) |_, i| {
-        enemies[i] = obj.Enemy.init(enemy_config, enemy_texture, 0.0, 0, 0);
+        enemies[i] = .{
+            .drawable = undefined,
+            .speed = undefined,
+            .rotation_speed = undefined,
+            .move_delay = undefined,
+            .shoot_delay = undefined,
+            .alive = false,
+        };
     }
 
     var spawn_timer: u32 = 0;
@@ -93,24 +101,24 @@ pub fn main() !void {
         defer rl.endDrawing();
 
         // Control logic
-        if (rl.isKeyDown(rl.KeyboardKey.up)) {
-            player.drawable.rect_dest.y -= player.speed;
-            uti.update_facing(&player.drawable, player.rotation_speed, 0);
-        }
-        if (rl.isKeyDown(rl.KeyboardKey.down)) {
-            player.drawable.rect_dest.y += player.speed;
-            uti.update_facing(&player.drawable, player.rotation_speed, 180);
-        }
-        if (rl.isKeyDown(rl.KeyboardKey.left)) {
-            player.drawable.rect_dest.x -= player.speed;
-            uti.update_facing(&player.drawable, player.rotation_speed, 270);
-        }
-        if (rl.isKeyDown(rl.KeyboardKey.right)) {
-            player.drawable.rect_dest.x += player.speed;
-            uti.update_facing(&player.drawable, player.rotation_speed, 90);
+        const leftx = rl.getGamepadAxisMovement(0, rl.GamepadAxis.left_x);
+        const lefty = rl.getGamepadAxisMovement(0, rl.GamepadAxis.left_y);
+        if (@abs(leftx) > 0.15 or @abs(lefty) > 0.15) {
+            const player_angle = uti.angle_from_gamepad(leftx, lefty);
+            const player_speed = player.speed * @min(1.0, @abs(leftx) + @abs(lefty));
+            const player_move = uti.get_angle_movement(player_speed, player_angle);
+            player.drawable.rect_dest.x += player_move.x;
+            player.drawable.rect_dest.y += player_move.y;
         }
 
-        if (rl.isKeyPressed(rl.KeyboardKey.space)) {
+        const rightx = rl.getGamepadAxisMovement(0, rl.GamepadAxis.right_x);
+        const righty = rl.getGamepadAxisMovement(0, rl.GamepadAxis.right_y);
+        if (@abs(rightx) > 0.15 or @abs(righty) > 0.15) {
+            const turn_target = uti.angle_from_gamepad(rightx, righty) + 90;
+            uti.update_facing(&player.drawable, player.rotation_speed, turn_target);
+        }
+        // if (rl.isKeyPressed(rl.KeyboardKey.space)) {
+        if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_trigger_2)) {
             for (&bullets, 0..) |*bullet, i| {
                 if (!bullet.active) {
                     const new_bullet = obj.Bullet.init(
@@ -126,24 +134,44 @@ pub fn main() !void {
             }
         }
 
-        // Update logic
+        // if (rl.isKeyDown(rl.KeyboardKey.up)) {
+        //     player.drawable.rect_dest.y -= player.speed;
+        //     uti.update_facing(&player.drawable, player.rotation_speed, 0);
+        // }
+        // if (rl.isKeyDown(rl.KeyboardKey.down)) {
+        //     player.drawable.rect_dest.y += player.speed;
+        //     uti.update_facing(&player.drawable, player.rotation_speed, 180);
+        // }
+        // if (rl.isKeyDown(rl.KeyboardKey.left)) {
+        //     player.drawable.rect_dest.x -= player.speed;
+        //     uti.update_facing(&player.drawable, player.rotation_speed, 270);
+        // }
+        // if (rl.isKeyDown(rl.KeyboardKey.right)) {
+        //     player.drawable.rect_dest.x += player.speed;
+        //     uti.update_facing(&player.drawable, player.rotation_speed, 90);
+        // }
+
+        // Update bullets
         for (&bullets) |*bullet| {
             if (bullet.active) {
-                const moves = uti.get_angle_movement(bullet.speed, bullet.drawable.facing);
+                const moves = uti.get_angle_movement(bullet.speed, bullet.drawable.facing - 90);
                 bullet.drawable.rect_dest.x += moves.x;
                 bullet.drawable.rect_dest.y += moves.y;
                 if (bullet.drawable.rect_dest.x <= 0 or bullet.drawable.rect_dest.x >= game_config.screen_width or bullet.drawable.rect_dest.y <= 0 or bullet.drawable.rect_dest.y >= game_config.screen_height) {
                     bullet.active = false;
                 }
                 for (&enemies) |*enemy| {
-                    if (rl.checkCollisionRecs(enemy.drawable.rect_dest, bullet.drawable.rect_dest)) {
-                        enemy.alive = false;
-                        bullet.active = false;
+                    if (enemy.alive) {
+                        if (rl.checkCollisionRecs(enemy.drawable.rect_dest, bullet.drawable.rect_dest)) {
+                            enemy.alive = false;
+                            bullet.active = false;
+                        }
                     }
                 }
             }
         }
 
+        // Spawn enemies
         spawn_timer += 1;
         if (spawn_timer >= game_config.spawn_delay) {
             spawn_timer = 0;
@@ -164,6 +192,7 @@ pub fn main() !void {
             }
         }
 
+        // Update enemies
         for (&enemies) |*enemy| {
             if (enemy.alive) {
                 uti.move_towards(&enemy.drawable, &player.drawable, enemy.speed);
@@ -172,7 +201,6 @@ pub fn main() !void {
 
         // Draw logic
         rl.drawTexture(background_texture, 0, 0, rl.Color.white);
-        // rl.drawRectangleRec(player.drawable.rect_dest, rl.Color.white);
 
         uti.draw_object(player.drawable);
 
@@ -184,6 +212,7 @@ pub fn main() !void {
 
         for (bullets) |bullet| {
             if (bullet.active) {
+                std.debug.print("Player facing: {d}, Bullet facing: {d}\n", .{ player.drawable.facing, bullet.drawable.facing });
                 uti.draw_object(bullet.drawable);
             }
         }

@@ -46,7 +46,7 @@ pub fn update_facing(object: *obj.Drawable, speed: f32, target: f32) void {
 }
 
 pub fn get_angle_movement(speed: f32, angle: f32) rl.Vector2 {
-    const rad = math.degreesToRadians(angle - 90.0);
+    const rad = math.degreesToRadians(angle);
     return .{
         .x = math.cos(rad) * speed,
         .y = math.sin(rad) * speed,
@@ -76,11 +76,16 @@ pub fn get_random_border_position(width: f32, height: f32) rl.Vector2 {
     }
 }
 
-pub fn move_towards(object: *obj.Drawable, target: *obj.Drawable, speed: f32) void {
-    const dif_x = object.rect_dest.x - target.rect_dest.x;
-    const dif_y = object.rect_dest.y - target.rect_dest.y;
+pub fn angle_from_gamepad(x: f32, y: f32) f32 {
+    const angle: f32 = math.radiansToDegrees(math.atan2(y, x));
+    return angle;
+}
 
-    const angle: f32 = math.radiansToDegrees(math.atan2(dif_y, dif_x)) - 90;
+pub fn move_towards(object: *obj.Drawable, target: *obj.Drawable, speed: f32) void {
+    const dif_x = target.rect_dest.x - object.rect_dest.x;
+    const dif_y = target.rect_dest.y - object.rect_dest.y;
+
+    const angle: f32 = math.radiansToDegrees(math.atan2(dif_y, dif_x));
 
     const move = get_angle_movement(speed, angle);
 
