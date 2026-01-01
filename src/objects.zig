@@ -1,5 +1,6 @@
 const rl = @import("raylib");
 const con = @import("config.zig");
+const uti = @import("utils.zig");
 
 pub const Drawable = struct {
     rect_source: rl.Rectangle,
@@ -11,8 +12,9 @@ pub const Drawable = struct {
 pub const Player = struct {
     drawable: Drawable,
     speed: f32,
-    rotation_speed: f32,
     skills: []*Skill = undefined,
+    health: u32,
+    score: u32,
 
     pub fn init(config: con.PlayerConfig, texture: rl.Texture) @This() {
         const rect_source = rl.Rectangle.init(
@@ -35,7 +37,8 @@ pub const Player = struct {
                 .facing = 0.0,
             },
             .speed = config.speed,
-            .rotation_speed = config.rotation_speed,
+            .health = config.health,
+            .score = 0,
         };
     }
 };
@@ -76,6 +79,22 @@ pub const Enemy = struct {
             .shoot_delay = config.shoot_delay,
         };
     }
+
+    pub fn update(self: *@This(), state: con.GameState) void {
+        if (self.alive) {
+            uti.move_towards(&self.drawable, &state.player.drawable, self.speed);
+            if (rl.checkCollisionRecs(self.drawable.rect_dest, state.player.drawable.rect_dest)) {
+                state.player.health -|= 1;
+                self.alive = false;
+            }
+        }
+    }
+
+    pub fn draw(self: @This()) void {
+        if (self.alive) {
+            uti.draw_object(self.drawable);
+        }
+    }
 };
 
 pub const Bullet = struct {
@@ -83,7 +102,7 @@ pub const Bullet = struct {
     speed: f32,
     active: bool,
 
-    pub fn init(config: con.BulletConfig, texture: rl.Texture, x: f32, y: f32, facing: f32) @This() {
+    pub fn init(config: con.BulletConfig, x: f32, y: f32, facing: f32) @This() {
         const rect_source = rl.Rectangle.init(
             config.tex_x,
             config.tex_y,
@@ -93,6 +112,63 @@ pub const Bullet = struct {
         const rect_dest = rl.Rectangle.init(
             x,
             y,
+            config.width,
+            config.height,
+        );
+        return .{
+            .drawable = .{
+                .rect_dest = rect_dest,
+                .rect_source = rect_source,
+                .texture = config.texture,
+                .facing = facing,
+            },
+            .speed = config.speed,
+            .active = true,
+        };
+    }
+
+    pub fn update(self: *@This(), state: con.GameState) void {
+        if (self.active) {
+            const moves = uti.get_angle_movement(self.speed, self.drawable.facing - 90);
+            self.drawable.rect_dest.x += moves.x;
+            self.drawable.rect_dest.y += moves.y;
+            if (self.drawable.rect_dest.x <= 0 or self.drawable.rect_dest.x >= state.game_config.screen_width or self.drawable.rect_dest.y <= 0 or self.drawable.rect_dest.y >= state.game_config.screen_height) {
+                self.active = false;
+            }
+            for (state.enemies) |*enemy| {
+                if (enemy.alive) {
+                    if (rl.checkCollisionRecs(enemy.drawable.rect_dest, self.drawable.rect_dest)) {
+                        enemy.alive = false;
+                        self.active = false;
+                        state.player.score += 1;
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn draw(self: @This()) void {
+        if (self.active) {
+            uti.draw_object(self.drawable);
+        }
+    }
+};
+
+pub const Sword = struct {
+    drawable: Drawable,
+    speed: f32,
+    active: bool,
+
+    pub fn init(config: con.SwordConfig, texture: rl.Texture, origin: Drawable, facing: f32) @This() {
+        const rect_source = rl.Rectangle.init(
+            config.tex_x,
+            config.tex_y,
+            config.tex_w,
+            config.tex_h,
+        );
+        const rect_dest = rl.Rectangle.init(
+            origin.rect_dest.x,
+            origin.rect_dest.y,
             config.width,
             config.height,
         );

@@ -19,6 +19,8 @@ pub fn reset_game_status(state: con.GameState) void {
         };
     }
     state.spawn_timer.* = 0;
+    state.player.score = 0;
+    state.player.health = 5; // MOVE TO CONFIG
 }
 
 pub fn draw_object(object: obj.Drawable) void {
