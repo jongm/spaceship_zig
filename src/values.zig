@@ -4,7 +4,19 @@ pub const game_config = con.GameConfig{
     .screen_width = 1600,
     .screen_height = 1000,
     .spawn_delay = 30,
-    .rotation_speed = 50,
+};
+
+pub var wheel_config = con.WheelConfig{
+    .start_x = 50,
+    .start_y = game_config.screen_height - 300,
+    .tex_w = 157,
+    .tex_h = 172,
+    .up_texture = undefined,
+    .down_texture = undefined,
+    .left_texture = undefined,
+    .right_texture = undefined,
+    .circle_side = 80,
+    .circle_gap = 10,
 };
 
 pub var player_config = con.PlayerConfig{

@@ -4,6 +4,7 @@ const obj = @import("objects.zig");
 const uti = @import("utils.zig");
 const gam = @import("gamepad.zig");
 const val = @import("values.zig");
+const men = @import("menu.zig");
 const std = @import("std");
 
 var game_status: con.GameStatus = .gameplay;
@@ -26,6 +27,15 @@ pub fn main() !void {
     defer rl.unloadTexture(background_texture);
     background_texture.width = val.game_config.screen_width;
     background_texture.height = val.game_config.screen_height;
+
+    const sword_wheel_texture = try rl.loadTexture("assets/circle_sword.png");
+    defer rl.unloadTexture(sword_wheel_texture);
+    const empty_wheel_texture = try rl.loadTexture("assets/circle_empty.png");
+    defer rl.unloadTexture(empty_wheel_texture);
+    val.wheel_config.up_texture = empty_wheel_texture;
+    val.wheel_config.left_texture = empty_wheel_texture;
+    val.wheel_config.right_texture = empty_wheel_texture;
+    val.wheel_config.down_texture = sword_wheel_texture;
 
     const player_texture = try rl.loadTexture("assets/ship1.png");
     defer rl.unloadTexture(player_texture);
@@ -72,6 +82,8 @@ pub fn main() !void {
     var enemies: [20]obj.Enemy = undefined;
     var sword: obj.Sword = undefined;
     var spawn_timer: u32 = 0;
+
+    const skill_wheel = men.SkillWheel.init(val.wheel_config);
 
     var shoot_skill = obj.Skill{
         .cooldown = 20,
@@ -175,6 +187,8 @@ pub fn main() !void {
                     bullet.draw();
                 }
                 sword.draw();
+
+                skill_wheel.draw();
             },
             else => {},
         }

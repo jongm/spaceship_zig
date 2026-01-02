@@ -22,7 +22,19 @@ pub const GameConfig = struct {
     screen_width: f32,
     screen_height: f32,
     spawn_delay: u32,
-    rotation_speed: f32,
+};
+
+pub const WheelConfig = struct {
+    start_x: f32,
+    start_y: f32,
+    up_texture: rl.Texture,
+    down_texture: rl.Texture,
+    left_texture: rl.Texture,
+    right_texture: rl.Texture,
+    circle_side: f32,
+    circle_gap: f32,
+    tex_w: f32,
+    tex_h: f32,
 };
 
 pub const PlayerConfig = struct {
