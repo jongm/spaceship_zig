@@ -16,6 +16,9 @@ pub fn main() !void {
     );
     defer rl.closeWindow();
 
+    rl.initAudioDevice();
+    defer rl.closeAudioDevice();
+
     rl.setTargetFPS(60);
 
     // Load Assets
@@ -40,8 +43,31 @@ pub fn main() !void {
     defer rl.unloadTexture(sword_texture);
     val.sword_config.texture = sword_texture;
 
+    // Load sounds
+    const bullet_sound = try rl.loadSound("sfx/laser1.wav");
+    rl.setSoundVolume(bullet_sound, 0.2);
+    rl.setSoundPitch(bullet_sound, 0.5);
+    defer rl.unloadSound(bullet_sound);
+    val.bullet_config.sound = bullet_sound;
+
+    const sword_sound = try rl.loadSound("sfx/sword1.wav");
+    defer rl.unloadSound(sword_sound);
+    val.sword_config.sound = sword_sound;
+
+    const explo1_sound = try rl.loadSound("sfx/explosion_short1.wav");
+    rl.setSoundVolume(explo1_sound, 0.3);
+    defer rl.unloadSound(explo1_sound);
+    val.enemy_config.death_sound = explo1_sound;
+
+    const explo2_sound = try rl.loadSound("sfx/destroyed1.wav");
+    defer rl.unloadSound(explo2_sound);
+    val.player_config.death_sound = explo1_sound;
+
+    const bgm_music = try rl.loadMusicStream("music/bgm1.mp3");
+    defer rl.unloadMusicStream(bgm_music);
+
     // Create objects
-    var player = obj.Player.init(val.player_config, player_texture);
+    var player = obj.Player.init(val.player_config);
     var bullets: [10]obj.Bullet = undefined;
     var enemies: [20]obj.Enemy = undefined;
     var sword: obj.Sword = undefined;
@@ -65,9 +91,12 @@ pub fn main() !void {
         .sword = &sword,
         .spawn_timer = &spawn_timer,
         .game_config = &val.game_config,
+        .game_status = &game_status,
     };
 
     uti.reset_game_status(state);
+
+    rl.playMusicStream(bgm_music);
 
     // Main loop
     while (!rl.windowShouldClose()) {
@@ -90,6 +119,8 @@ pub fn main() !void {
                 for (player.skills) |skill| {
                     skill.timer += 1;
                 }
+
+                rl.updateMusicStream(bgm_music);
 
                 // Control logic
                 gam.handle_controls(state);
@@ -125,9 +156,7 @@ pub fn main() !void {
                 }
 
                 // Update player
-                if (player.health <= 0) {
-                    game_status = .game_lost;
-                }
+                player.update(state);
 
                 // Draw logic
                 rl.drawTexture(background_texture, 0, 0, rl.Color.white);

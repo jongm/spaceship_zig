@@ -15,6 +15,7 @@ pub const GameState = struct {
     sword: *obj.Sword,
     spawn_timer: *u32,
     game_config: *const GameConfig,
+    game_status: *GameStatus,
 };
 
 pub const GameConfig = struct {
@@ -36,6 +37,7 @@ pub const PlayerConfig = struct {
     speed: f32,
     health: u32,
     texture: rl.Texture,
+    death_sound: rl.Sound,
 };
 
 pub const EnemyConfig = struct {
@@ -46,10 +48,11 @@ pub const EnemyConfig = struct {
     width: f32,
     height: f32,
     speed: f32,
-    rotation_speed: f32,
+    health: u32,
     shoot_delay: u32,
     move_delay: u32,
     texture: rl.Texture,
+    death_sound: rl.Sound,
 };
 
 pub const BulletConfig = struct {
@@ -61,6 +64,7 @@ pub const BulletConfig = struct {
     tex_w: f32,
     tex_h: f32,
     texture: rl.Texture,
+    sound: rl.Sound,
 };
 
 pub const SwordConfig = struct {
@@ -73,4 +77,5 @@ pub const SwordConfig = struct {
     tex_h: f32,
     gap: f32,
     texture: rl.Texture,
+    sound: rl.Sound,
 };

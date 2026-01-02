@@ -19,6 +19,7 @@ pub var player_config = con.PlayerConfig{
     .speed = 10,
     .health = 5,
     .texture = undefined,
+    .death_sound = undefined,
 };
 
 pub var enemy_config = con.EnemyConfig{
@@ -29,10 +30,11 @@ pub var enemy_config = con.EnemyConfig{
     .width = 90,
     .height = 61,
     .speed = 5,
-    .rotation_speed = 5,
+    .health = 1,
     .move_delay = 100,
     .shoot_delay = 200,
     .texture = undefined,
+    .death_sound = undefined,
 };
 
 pub var bullet_config = con.BulletConfig{
@@ -44,6 +46,7 @@ pub var bullet_config = con.BulletConfig{
     .tex_w = 10,
     .tex_h = 20,
     .texture = undefined,
+    .sound = undefined,
 };
 
 pub var sword_config = con.SwordConfig{
@@ -56,4 +59,5 @@ pub var sword_config = con.SwordConfig{
     .tex_h = 297,
     .gap = 200,
     .texture = undefined,
+    .sound = undefined,
 };

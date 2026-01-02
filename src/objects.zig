@@ -1,6 +1,7 @@
 const rl = @import("raylib");
 const con = @import("config.zig");
 const uti = @import("utils.zig");
+const val = @import("values.zig");
 const std = @import("std");
 const math = std.math;
 
@@ -18,7 +19,7 @@ pub const Player = struct {
     health: u32,
     score: u32,
 
-    pub fn init(config: con.PlayerConfig, texture: rl.Texture) @This() {
+    pub fn init(config: con.PlayerConfig) @This() {
         const rect_source = rl.Rectangle.init(
             config.tex_x,
             config.tex_y,
@@ -35,7 +36,7 @@ pub const Player = struct {
             .drawable = .{
                 .rect_source = rect_source,
                 .rect_dest = rect_dest,
-                .texture = texture,
+                .texture = config.texture,
                 .facing = 0.0,
             },
             .speed = config.speed,
@@ -43,14 +44,26 @@ pub const Player = struct {
             .score = 0,
         };
     }
+
+    pub fn update(self: *@This(), state: con.GameState) void {
+        if (self.health == 0) {
+            self.die(state);
+        }
+    }
+
+    pub fn die(self: *@This(), state: con.GameState) void {
+        self.health = 0;
+        rl.playSound(val.player_config.death_sound);
+        state.game_status.* = .game_lost;
+    }
 };
 
 pub const Enemy = struct {
     drawable: Drawable,
     speed: f32,
-    rotation_speed: f32,
     move_delay: u32,
     shoot_delay: u32,
+    health: u32,
     move_timer: u32 = 0,
     shoot_timer: u32 = 0,
     alive: bool = false,
@@ -76,9 +89,9 @@ pub const Enemy = struct {
                 .facing = facing,
             },
             .speed = config.speed,
-            .rotation_speed = config.rotation_speed,
             .move_delay = config.move_delay,
             .shoot_delay = config.shoot_delay,
+            .health = config.health,
         };
     }
 
@@ -89,7 +102,16 @@ pub const Enemy = struct {
                 state.player.health -|= 1;
                 self.alive = false;
             }
+            if (self.health == 0) {
+                self.die(state);
+            }
         }
+    }
+
+    pub fn die(self: *@This(), state: con.GameState) void {
+        self.alive = false;
+        state.player.score += 1;
+        rl.playSound(val.enemy_config.death_sound);
     }
 
     pub fn draw(self: @This()) void {
@@ -140,9 +162,8 @@ pub const Bullet = struct {
             for (state.enemies) |*enemy| {
                 if (enemy.alive) {
                     if (rl.checkCollisionRecs(enemy.drawable.rect_dest, self.drawable.rect_dest)) {
-                        enemy.alive = false;
+                        enemy.health -|= 1;
                         self.active = false;
-                        state.player.score += 1;
                     }
                 }
             }
@@ -218,8 +239,7 @@ pub const Sword = struct {
                 if (enemy.alive) {
                     for (self.rects) |rect| {
                         if (rl.checkCollisionRecs(enemy.drawable.rect_dest, rect.rect_dest)) {
-                            enemy.alive = false;
-                            state.player.score += 1;
+                            enemy.health -|= 1;
                         }
                     }
                 }

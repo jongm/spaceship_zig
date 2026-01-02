@@ -36,6 +36,7 @@ pub fn handle_controls(state: con.GameState) void {
                     );
                     state.bullets[i] = new_bullet;
                     state.player.skills[0].timer = 0;
+                    rl.playSound(val.bullet_config.sound);
                     break;
                 }
             }
@@ -49,6 +50,7 @@ pub fn handle_controls(state: con.GameState) void {
             );
             state.sword.* = new_sword;
             state.player.skills[1].timer = 0;
+            rl.playSound(val.sword_config.sound);
         }
     }
 }

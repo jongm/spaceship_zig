@@ -12,10 +12,10 @@ pub fn reset_game_status(state: con.GameState) void {
         state.enemies[i] = .{
             .drawable = undefined,
             .speed = undefined,
-            .rotation_speed = undefined,
             .move_delay = undefined,
             .shoot_delay = undefined,
             .alive = false,
+            .health = undefined,
         };
     }
     state.spawn_timer.* = 0;
