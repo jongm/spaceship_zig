@@ -112,3 +112,16 @@ pub fn move_towards(object: *obj.Drawable, target: *obj.Drawable, speed: f32) vo
     object.rect_dest.x += move.x;
     object.rect_dest.y += move.y;
 }
+
+pub fn rotate_rect_around_origin(rect: *obj.Drawable, origin_x: f32, origin_y: f32) void {
+    if (rect.facing >= 360) {
+        rect.facing -= 360;
+    }
+    const angle = math.degreesToRadians(rect.facing);
+
+    const dif_x = rect.rect_dest.x - origin_x;
+    const dif_y = rect.rect_dest.y - origin_y;
+
+    rect.rect_dest.x = (math.cos(angle) * dif_x) - (math.sin(angle) * dif_y) + origin_x;
+    rect.rect_dest.y = (math.sin(angle) * dif_x) + (math.cos(angle) * dif_y) + origin_y;
+}

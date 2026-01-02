@@ -2,6 +2,8 @@ const rl = @import("raylib");
 const con = @import("config.zig");
 const uti = @import("utils.zig");
 const obj = @import("objects.zig");
+const val = @import("values.zig");
+const std = @import("std");
 
 pub fn handle_controls(state: con.GameState) void {
     // Left joystick - Movement
@@ -27,7 +29,7 @@ pub fn handle_controls(state: con.GameState) void {
             for (state.bullets, 0..) |*bullet, i| {
                 if (!bullet.active) {
                     const new_bullet = obj.Bullet.init(
-                        state.mybullet,
+                        val.bullet_config,
                         state.player.drawable.rect_dest.x + state.player.drawable.rect_dest.width / 2,
                         state.player.drawable.rect_dest.y + state.player.drawable.rect_dest.height / 2,
                         state.player.drawable.facing,
@@ -37,6 +39,16 @@ pub fn handle_controls(state: con.GameState) void {
                     break;
                 }
             }
+        }
+    }
+    if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_trigger_1)) {
+        if (state.player.skills[1].timer >= state.player.skills[1].cooldown) {
+            const new_sword = obj.Sword.init(
+                val.sword_config,
+                state.player.drawable,
+            );
+            state.sword.* = new_sword;
+            state.player.skills[1].timer = 0;
         }
     }
 }
