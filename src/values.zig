@@ -15,8 +15,8 @@ pub var wheel_config = con.WheelConfig{
     .down_texture = undefined,
     .left_texture = undefined,
     .right_texture = undefined,
-    .circle_side = 80,
-    .circle_gap = 10,
+    .circle_side = 70,
+    .circle_gap = 5,
 };
 
 pub var player_config = con.PlayerConfig{

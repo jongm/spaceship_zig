@@ -2,6 +2,7 @@ const rl = @import("raylib");
 const con = @import("config.zig");
 const uti = @import("utils.zig");
 const val = @import("values.zig");
+const ski = @import("skills.zig");
 const std = @import("std");
 const math = std.math;
 
@@ -15,9 +16,11 @@ pub const Drawable = struct {
 pub const Player = struct {
     drawable: Drawable,
     speed: f32,
-    skills: []*Skill = undefined,
     health: u32,
     score: u32,
+    skill1_toggled: bool,
+    skill1: *ski.BulletSkill = undefined,
+    skill2: *ski.SwordSkill = undefined,
 
     pub fn init(config: con.PlayerConfig) @This() {
         const rect_source = rl.Rectangle.init(
@@ -42,12 +45,16 @@ pub const Player = struct {
             .speed = config.speed,
             .health = config.health,
             .score = 0,
+            .skill1_toggled = false,
         };
     }
 
     pub fn update(self: *@This(), state: con.GameState) void {
         if (self.health == 0) {
             self.die(state);
+        }
+        if (self.skill1_toggled) {
+            self.skill1.use(state);
         }
     }
 
@@ -258,9 +265,4 @@ pub const Sword = struct {
             }
         }
     }
-};
-
-pub const Skill = struct {
-    cooldown: u32,
-    timer: u32,
 };

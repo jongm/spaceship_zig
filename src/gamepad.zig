@@ -24,33 +24,14 @@ pub fn handle_controls(state: con.GameState) void {
         const turn_target = uti.angle_from_gamepad(rightx, righty) + 90;
         state.player.drawable.facing = turn_target;
     }
-    if (rl.isGamepadButtonDown(0, rl.GamepadButton.right_trigger_2)) {
-        if (state.player.skills[0].timer >= state.player.skills[0].cooldown) {
-            for (state.bullets, 0..) |*bullet, i| {
-                if (!bullet.active) {
-                    const new_bullet = obj.Bullet.init(
-                        val.bullet_config,
-                        state.player.drawable.rect_dest.x + state.player.drawable.rect_dest.width / 2,
-                        state.player.drawable.rect_dest.y + state.player.drawable.rect_dest.height / 2,
-                        state.player.drawable.facing,
-                    );
-                    state.bullets[i] = new_bullet;
-                    state.player.skills[0].timer = 0;
-                    rl.playSound(val.bullet_config.sound);
-                    break;
-                }
-            }
-        }
+
+    // Skill 1
+    if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_face_right)) {
+        state.player.skill1_toggled = !state.player.skill1_toggled;
     }
+
+    // Skill 2
     if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_trigger_1)) {
-        if (state.player.skills[1].timer >= state.player.skills[1].cooldown) {
-            const new_sword = obj.Sword.init(
-                val.sword_config,
-                state.player.drawable,
-            );
-            state.sword.* = new_sword;
-            state.player.skills[1].timer = 0;
-            rl.playSound(val.sword_config.sound);
-        }
+        state.player.skill2.use(state);
     }
 }

@@ -5,6 +5,7 @@ const uti = @import("utils.zig");
 const gam = @import("gamepad.zig");
 const val = @import("values.zig");
 const men = @import("menu.zig");
+const ski = @import("skills.zig");
 const std = @import("std");
 
 var game_status: con.GameStatus = .gameplay;
@@ -85,16 +86,18 @@ pub fn main() !void {
 
     const skill_wheel = men.SkillWheel.init(val.wheel_config);
 
-    var shoot_skill = obj.Skill{
+    var shoot_skill = ski.BulletSkill{
         .cooldown = 20,
         .timer = 20,
+        .icon = undefined,
     };
-    var sword_skill = obj.Skill{
+    var sword_skill = ski.SwordSkill{
         .cooldown = 100,
         .timer = 100,
+        .icon = undefined,
     };
-    var all_skills = [_]*obj.Skill{ &shoot_skill, &sword_skill };
-    player.skills = &all_skills;
+    player.skill1 = &shoot_skill;
+    player.skill2 = &sword_skill;
 
     const state = con.GameState{
         .player = &player,
@@ -116,9 +119,17 @@ pub fn main() !void {
         defer rl.endDrawing();
 
         switch (game_status) {
+            .pause => {
+                rl.clearBackground(rl.colorAlpha(rl.Color.black, 0.2));
+                rl.drawText("Paused", val.game_config.screen_width / 2, val.game_config.screen_height / 2 + 200, 40, rl.Color.white);
+                if (rl.isGamepadButtonPressed(0, rl.GamepadButton.middle_right)) {
+                    game_status = .gameplay;
+                }
+            },
             .game_lost => {
-                rl.clearBackground(rl.Color.black);
-                rl.drawText("Game Over", val.game_config.screen_width / 2, val.game_config.screen_height / 2 + 200, 40, rl.Color.red);
+                rl.clearBackground(rl.colorAlpha(rl.Color.black, 0.6));
+                const score_text = rl.textFormat("Game Over - Score: %d", .{player.score});
+                rl.drawText(score_text, val.game_config.screen_width / 2, val.game_config.screen_height / 2 + 200, 40, rl.Color.red);
                 rl.drawText("Press A to restart", val.game_config.screen_width / 2, val.game_config.screen_height / 2, 30, rl.Color.red);
                 if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_face_down)) {
                     uti.reset_game_status(state);
@@ -126,11 +137,13 @@ pub fn main() !void {
                 }
             },
             .gameplay => {
+                if (rl.isGamepadButtonPressed(0, rl.GamepadButton.middle_right)) {
+                    game_status = .pause;
+                }
                 // Timers
                 spawn_timer += 1;
-                for (player.skills) |skill| {
-                    skill.timer += 1;
-                }
+                player.skill1.timer += 1;
+                player.skill2.timer += 1;
 
                 rl.updateMusicStream(bgm_music);
 
@@ -188,7 +201,7 @@ pub fn main() !void {
                 }
                 sword.draw();
 
-                skill_wheel.draw();
+                skill_wheel.draw(state);
             },
             else => {},
         }
