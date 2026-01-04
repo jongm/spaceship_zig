@@ -31,12 +31,27 @@ pub fn main() !void {
 
     const sword_wheel_texture = try rl.loadTexture("assets/circle_sword.png");
     defer rl.unloadTexture(sword_wheel_texture);
+    const bullet_wheel_texture = try rl.loadTexture("assets/circle_bullet.png");
+    defer rl.unloadTexture(bullet_wheel_texture);
     const empty_wheel_texture = try rl.loadTexture("assets/circle_empty.png");
     defer rl.unloadTexture(empty_wheel_texture);
-    val.wheel_config.up_texture = empty_wheel_texture;
-    val.wheel_config.left_texture = empty_wheel_texture;
-    val.wheel_config.right_texture = empty_wheel_texture;
-    val.wheel_config.down_texture = sword_wheel_texture;
+    const x_wheel_texture = try rl.loadTexture("assets/circle_x.png");
+    defer rl.unloadTexture(x_wheel_texture);
+    const y_wheel_texture = try rl.loadTexture("assets/circle_y.png");
+    defer rl.unloadTexture(y_wheel_texture);
+    const r2_wheel_texture = try rl.loadTexture("assets/circle_r2.png");
+    defer rl.unloadTexture(r2_wheel_texture);
+    const l1_wheel_texture = try rl.loadTexture("assets/circle_l1.png");
+    defer rl.unloadTexture(l1_wheel_texture);
+    const l2_wheel_texture = try rl.loadTexture("assets/circle_l2.png");
+    defer rl.unloadTexture(l2_wheel_texture);
+    val.wheel_config.up_texture = y_wheel_texture;
+    val.wheel_config.left_texture = x_wheel_texture;
+    val.wheel_config.right_texture = bullet_wheel_texture;
+    val.wheel_config.r1_texture = sword_wheel_texture;
+    val.wheel_config.r2_texture = r2_wheel_texture;
+    val.wheel_config.l1_texture = l1_wheel_texture;
+    val.wheel_config.l2_texture = l2_wheel_texture;
 
     const player_texture = try rl.loadTexture("assets/ship1.png");
     defer rl.unloadTexture(player_texture);
