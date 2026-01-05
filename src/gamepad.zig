@@ -26,18 +26,22 @@ pub fn handle_controls(state: con.GameState) void {
     }
 
     if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_face_right)) {
-        state.player.skill1_toggled = !state.player.skill1_toggled;
+        const skill = &state.player.skills[0];
+        skill.toggled = !skill.toggled;
     }
 
     if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_trigger_1)) {
-        state.player.skill2.use(state);
+        const skill = &state.player.skills[1];
+        skill.use(skill, state);
     }
 
     if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_trigger_2)) {
-        state.player.skill3.use(state);
+        const skill = &state.player.skills[2];
+        skill.use(skill, state);
     }
 
     if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_face_left)) {
-        state.player.skill4.use(state);
+        const skill = &state.player.skills[3];
+        skill.use(skill, state);
     }
 }

@@ -14,7 +14,7 @@ pub fn reset_game_status(state: con.GameState) void {
             .speed = undefined,
             .move_delay = undefined,
             .shoot_delay = undefined,
-            .alive = false,
+            .active = false,
             .health = undefined,
             .damage = undefined,
         };

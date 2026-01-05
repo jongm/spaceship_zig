@@ -110,30 +110,13 @@ pub fn main() !void {
 
     const skill_wheel = men.SkillWheel.init(val.wheel_config);
 
-    var shoot_skill = ski.BulletSkill{
-        .cooldown = 20,
-        .timer = 20,
-        .icon = undefined,
+    var player_skills = [_]ski.Skill{
+        ski.shoot_skill,
+        ski.sword_skill,
+        ski.bullet_bomb_skill,
+        ski.shield_skill,
     };
-    var sword_skill = ski.SwordSkill{
-        .cooldown = 100,
-        .timer = 100,
-        .icon = undefined,
-    };
-    var bullet_bomb_skill = ski.BulletBombSkill{
-        .cooldown = 300,
-        .timer = 300,
-        .icon = undefined,
-    };
-    var shield_skill = ski.ShieldSkill{
-        .cooldown = 400,
-        .timer = 400,
-        .icon = undefined,
-    };
-    player.skill1 = &shoot_skill;
-    player.skill2 = &sword_skill;
-    player.skill3 = &bullet_bomb_skill;
-    player.skill4 = &shield_skill;
+    player.skills = &player_skills;
 
     const state = con.GameState{
         .player = &player,
@@ -169,8 +152,10 @@ pub fn main() !void {
                 const score_text = rl.textFormat("Game Over - Score: %d", .{player.score});
                 rl.drawText(score_text, val.game_config.screen_width / 2, val.game_config.screen_height / 2 + 200, 40, rl.Color.red);
                 rl.drawText("Press A to restart", val.game_config.screen_width / 2, val.game_config.screen_height / 2, 30, rl.Color.red);
+                rl.stopMusicStream(bgm_music);
                 if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_face_down)) {
                     uti.reset_game_status(state);
+                    rl.playMusicStream(bgm_music);
                     game_status = .gameplay;
                 }
             },
@@ -180,10 +165,9 @@ pub fn main() !void {
                 }
                 // Timers
                 spawn_timer += 1;
-                player.skill1.timer += 1;
-                player.skill2.timer += 1;
-                player.skill3.timer += 1;
-                player.skill4.timer += 1;
+                for (player.skills) |*skill| {
+                    skill.timer += 1;
+                }
 
                 rl.updateMusicStream(bgm_music);
 
@@ -193,24 +177,7 @@ pub fn main() !void {
                 // Spawn enemies
                 if (spawn_timer >= val.game_config.spawn_delay) {
                     spawn_timer = 0;
-                    for (0..enemies.max + 1) |i| {
-                        const enemy = &enemies.list[i];
-                        if (!enemy.alive) {
-                            const position = uti.get_random_border_position(val.game_config.screen_width, val.game_config.screen_height);
-                            var new_enemy = obj.Enemy.init(
-                                val.enemy_config,
-                                0.0,
-                                position.x,
-                                position.y,
-                            );
-                            new_enemy.alive = true;
-                            enemies.list[i] = new_enemy;
-                            if (i == enemies.max) {
-                                enemies.max += 1;
-                            }
-                            break;
-                        }
-                    }
+                    obj.Enemy.spawn(state);
                 }
 
                 // Update skills

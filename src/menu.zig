@@ -140,61 +140,30 @@ pub const SkillWheel = struct {
         uti.draw_object(self.rect_r1);
         uti.draw_object(self.rect_r2);
 
-        if (state.player.skill2.timer < state.player.skill2.cooldown) {
-            const rect = self.rect_r1.rect_dest;
-            const center = rl.Vector2{
-                .x = rect.x + rect.width / 2,
-                .y = rect.y + rect.height / 2,
-            };
-            const ready: f32 = @as(f32, @floatFromInt(state.player.skill2.timer)) / @as(f32, @floatFromInt(state.player.skill2.cooldown));
-            const end_angle = 360.0 * ready - 90.0;
-            rl.drawRing(
-                center,
-                0,
-                rect.width / 2,
-                270.0,
-                end_angle,
-                0,
-                rl.colorAlpha(rl.Color.black, 0.7),
-            );
-        }
-
-        if (state.player.skill3.timer < state.player.skill3.cooldown) {
-            const rect = self.rect_r2.rect_dest;
-            const center = rl.Vector2{
-                .x = rect.x + rect.width / 2,
-                .y = rect.y + rect.height / 2,
-            };
-            const ready: f32 = @as(f32, @floatFromInt(state.player.skill3.timer)) / @as(f32, @floatFromInt(state.player.skill3.cooldown));
-            const end_angle = 360.0 * ready - 90.0;
-            rl.drawRing(
-                center,
-                0,
-                rect.width / 2,
-                270.0,
-                end_angle,
-                0,
-                rl.colorAlpha(rl.Color.black, 0.7),
-            );
-        }
-
-        if (state.player.skill4.timer < state.player.skill4.cooldown) {
-            const rect = self.rect_left.rect_dest;
-            const center = rl.Vector2{
-                .x = rect.x + rect.width / 2,
-                .y = rect.y + rect.height / 2,
-            };
-            const ready: f32 = @as(f32, @floatFromInt(state.player.skill4.timer)) / @as(f32, @floatFromInt(state.player.skill4.cooldown));
-            const end_angle = 360.0 * ready - 90.0;
-            rl.drawRing(
-                center,
-                0,
-                rect.width / 2,
-                270.0,
-                end_angle,
-                0,
-                rl.colorAlpha(rl.Color.black, 0.7),
-            );
+        for (state.player.skills, 0..) |skill, i| {
+            if (skill.timer < skill.cooldown) {
+                const rect = switch (i) {
+                    1 => self.rect_r1.rect_dest,
+                    2 => self.rect_r2.rect_dest,
+                    3 => self.rect_left.rect_dest,
+                    else => continue,
+                };
+                const center = rl.Vector2{
+                    .x = rect.x + rect.width / 2,
+                    .y = rect.y + rect.height / 2,
+                };
+                const ready: f32 = @as(f32, @floatFromInt(skill.timer)) / @as(f32, @floatFromInt(skill.cooldown));
+                const end_angle = 360.0 * ready - 90.0;
+                rl.drawRing(
+                    center,
+                    0,
+                    rect.width / 2,
+                    270.0,
+                    end_angle,
+                    0,
+                    rl.colorAlpha(rl.Color.black, 0.7),
+                );
+            }
         }
     }
 };

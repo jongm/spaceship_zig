@@ -13,10 +13,24 @@ pub const Drawable = struct {
     facing: f32,
 };
 
+// Smart array that only grows in size when all elements are active
 pub fn MaxArray(T: type) type {
     return struct {
         list: []T,
         max: usize = 1,
+
+        pub fn add(self: *@This(), item: T) void {
+            for (0..self.max + 1) |i| {
+                const current = &self.list[i];
+                if (!current.active) {
+                    current.* = item;
+                    if (i == self.max) {
+                        self.max += 1;
+                    }
+                    break;
+                }
+            }
+        }
     };
 }
 
@@ -34,11 +48,7 @@ pub const Player = struct {
     immune: bool,
     immune_timer: u32 = 0,
     effect: player_effect = .normal,
-    skill1_toggled: bool,
-    skill1: *ski.BulletSkill = undefined,
-    skill2: *ski.SwordSkill = undefined,
-    skill3: *ski.BulletBombSkill = undefined,
-    skill4: *ski.ShieldSkill = undefined,
+    skills: []ski.Skill = undefined,
 
     pub fn init(config: con.PlayerConfig) @This() {
         const rect_source = rl.Rectangle.init(
@@ -63,7 +73,6 @@ pub const Player = struct {
             .speed = config.speed,
             .health = config.health,
             .score = 0,
-            .skill1_toggled = false,
             .immune = false,
         };
     }
@@ -72,8 +81,8 @@ pub const Player = struct {
         if (self.health == 0) {
             self.die(state);
         }
-        if (self.skill1_toggled) {
-            self.skill1.use(state);
+        if (self.skills[0].toggled) {
+            self.skills[0].use(&self.skills[0], state);
         }
         switch (self.effect) {
             .shielded => {
@@ -132,7 +141,7 @@ pub const Enemy = struct {
     damage: u32,
     move_timer: u32 = 0,
     shoot_timer: u32 = 0,
-    alive: bool = false,
+    active: bool = false,
 
     pub fn init(config: con.EnemyConfig, facing: f32, start_x: f32, start_y: f32) @This() {
         const rect_source = rl.Rectangle.init(
@@ -159,16 +168,17 @@ pub const Enemy = struct {
             .shoot_delay = config.shoot_delay,
             .health = config.health,
             .damage = config.damage,
+            .active = true,
         };
     }
 
     pub fn update(self: *@This(), state: con.GameState) void {
-        if (self.alive) {
+        if (self.active) {
             uti.move_towards(&self.drawable, &state.player.drawable, self.speed);
             if (rl.checkCollisionRecs(self.drawable.rect_dest, state.player.drawable.rect_dest)) {
                 state.player.get_damage(self.damage);
                 if (!state.player.immune) {
-                    self.alive = false;
+                    self.active = false;
                 }
             }
             if (self.health == 0) {
@@ -177,14 +187,25 @@ pub const Enemy = struct {
         }
     }
 
+    pub fn spawn(state: con.GameState) void {
+        const position = uti.get_random_border_position(val.game_config.screen_width, val.game_config.screen_height);
+        const new_enemy = Enemy.init(
+            val.enemy_config,
+            0.0,
+            position.x,
+            position.y,
+        );
+        state.enemies.add(new_enemy);
+    }
+
     pub fn die(self: *@This(), state: con.GameState) void {
-        self.alive = false;
+        self.active = false;
         state.player.score += 1;
         rl.playSound(val.enemy_config.death_sound);
     }
 
     pub fn draw(self: @This()) void {
-        if (self.alive) {
+        if (self.active) {
             uti.draw_object(self.drawable);
         }
     }
@@ -230,7 +251,7 @@ pub const BulletBomb = struct {
             }
             for (0..state.enemies.max) |i| {
                 const enemy = &state.enemies.list[i];
-                if (enemy.alive) {
+                if (enemy.active) {
                     if (rl.checkCollisionRecs(enemy.drawable.rect_dest, self.drawable.rect_dest)) {
                         self.explode(state);
                     }
@@ -307,7 +328,7 @@ pub const Bullet = struct {
             }
             for (0..state.enemies.max) |i| {
                 const enemy = &state.enemies.list[i];
-                if (enemy.alive) {
+                if (enemy.active) {
                     if (rl.checkCollisionRecs(enemy.drawable.rect_dest, self.drawable.rect_dest)) {
                         enemy.health -|= 1;
                         if (enemy.health == 0) {
@@ -387,7 +408,7 @@ pub const Sword = struct {
             }
             for (0..state.enemies.max) |i| {
                 const enemy = &state.enemies.list[i];
-                if (enemy.alive) {
+                if (enemy.active) {
                     for (self.rects) |rect| {
                         if (rl.checkCollisionRecs(enemy.drawable.rect_dest, rect.rect_dest)) {
                             enemy.health -|= 1;
