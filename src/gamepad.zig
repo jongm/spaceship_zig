@@ -34,4 +34,9 @@ pub fn handle_controls(state: con.GameState) void {
     if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_trigger_1)) {
         state.player.skill2.use(state);
     }
+
+    // Skill 3
+    if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_trigger_2)) {
+        state.player.skill3.use(state);
+    }
 }

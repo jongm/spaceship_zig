@@ -5,11 +5,11 @@ const std = @import("std");
 const math = std.math;
 
 pub fn reset_game_status(state: con.GameState) void {
-    for (state.bullets, 0..) |_, i| {
-        state.bullets[i] = .{ .drawable = undefined, .speed = undefined, .active = false };
+    for (state.bullets.list, 0..) |_, i| {
+        state.bullets.list[i] = .{ .drawable = undefined, .speed = undefined, .active = false };
     }
-    for (state.enemies, 0..) |_, i| {
-        state.enemies[i] = .{
+    for (state.enemies.list, 0..) |_, i| {
+        state.enemies.list[i] = .{
             .drawable = undefined,
             .speed = undefined,
             .move_delay = undefined,

@@ -13,6 +13,13 @@ pub const Drawable = struct {
     facing: f32,
 };
 
+pub fn MaxArray(T: type) type {
+    return struct {
+        list: []T,
+        max: usize = 1,
+    };
+}
+
 pub const Player = struct {
     drawable: Drawable,
     speed: f32,
@@ -21,6 +28,7 @@ pub const Player = struct {
     skill1_toggled: bool,
     skill1: *ski.BulletSkill = undefined,
     skill2: *ski.SwordSkill = undefined,
+    skill3: *ski.BulletBombSkill = undefined,
 
     pub fn init(config: con.PlayerConfig) @This() {
         const rect_source = rl.Rectangle.init(
@@ -128,6 +136,83 @@ pub const Enemy = struct {
     }
 };
 
+pub const BulletBomb = struct {
+    drawable: Drawable,
+    speed: f32,
+    active: bool,
+
+    pub fn init(config: con.BulletConfig, x: f32, y: f32, facing: f32) @This() {
+        const rect_source = rl.Rectangle.init(
+            config.tex_x,
+            config.tex_y,
+            config.tex_w,
+            config.tex_h,
+        );
+        const rect_dest = rl.Rectangle.init(
+            x,
+            y,
+            config.width,
+            config.height,
+        );
+        return .{
+            .drawable = .{
+                .rect_dest = rect_dest,
+                .rect_source = rect_source,
+                .texture = config.texture,
+                .facing = facing,
+            },
+            .speed = config.speed,
+            .active = true,
+        };
+    }
+
+    pub fn update(self: *@This(), state: con.GameState) void {
+        if (self.active) {
+            const moves = uti.get_angle_movement(self.speed, self.drawable.facing - 90);
+            self.drawable.rect_dest.x += moves.x;
+            self.drawable.rect_dest.y += moves.y;
+            if (self.drawable.rect_dest.x <= 0 or self.drawable.rect_dest.x >= state.game_config.screen_width or self.drawable.rect_dest.y <= 0 or self.drawable.rect_dest.y >= state.game_config.screen_height) {
+                self.active = false;
+            }
+            for (0..state.enemies.max) |i| {
+                const enemy = &state.enemies.list[i];
+                if (enemy.alive) {
+                    if (rl.checkCollisionRecs(enemy.drawable.rect_dest, self.drawable.rect_dest)) {
+                        self.explode(state);
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn explode(self: *@This(), state: con.GameState) void {
+        self.active = false;
+        const amount = 16;
+        for (0..amount) |i| {
+            const bomb_bullet = &state.bomb_bullets.list[i];
+            const facing: f32 = @floatFromInt(i * (360 / amount));
+            if (!bomb_bullet.active) {
+                const new_bullet = Bullet.init(
+                    val.bullet_bomb_bullet_config,
+                    self.drawable.rect_dest.x + self.drawable.rect_dest.width / 2,
+                    self.drawable.rect_dest.y + self.drawable.rect_dest.height / 2,
+                    facing,
+                );
+                state.bomb_bullets.list[i] = new_bullet;
+                state.bomb_bullets.max = amount + 1;
+                rl.playSound(val.bullet_config.sound);
+                std.debug.print("Created bullet {d}\n", .{i});
+            }
+        }
+    }
+
+    pub fn draw(self: @This()) void {
+        if (self.active) {
+            uti.draw_object(self.drawable);
+        }
+    }
+};
+
 pub const Bullet = struct {
     drawable: Drawable,
     speed: f32,
@@ -166,7 +251,8 @@ pub const Bullet = struct {
             if (self.drawable.rect_dest.x <= 0 or self.drawable.rect_dest.x >= state.game_config.screen_width or self.drawable.rect_dest.y <= 0 or self.drawable.rect_dest.y >= state.game_config.screen_height) {
                 self.active = false;
             }
-            for (state.enemies) |*enemy| {
+            for (0..state.enemies.max) |i| {
+                const enemy = &state.enemies.list[i];
                 if (enemy.alive) {
                     if (rl.checkCollisionRecs(enemy.drawable.rect_dest, self.drawable.rect_dest)) {
                         enemy.health -|= 1;
@@ -242,7 +328,8 @@ pub const Sword = struct {
                     center.y + center.height / 2,
                 );
             }
-            for (state.enemies) |*enemy| {
+            for (0..state.enemies.max) |i| {
+                const enemy = &state.enemies.list[i];
                 if (enemy.alive) {
                     for (self.rects) |rect| {
                         if (rl.checkCollisionRecs(enemy.drawable.rect_dest, rect.rect_dest)) {

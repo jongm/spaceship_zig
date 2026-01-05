@@ -158,5 +158,24 @@ pub const SkillWheel = struct {
                 rl.colorAlpha(rl.Color.black, 0.7),
             );
         }
+
+        if (state.player.skill3.timer < state.player.skill3.cooldown) {
+            const rect = self.rect_r2.rect_dest;
+            const center = rl.Vector2{
+                .x = rect.x + rect.width / 2,
+                .y = rect.y + rect.height / 2,
+            };
+            const ready: f32 = @as(f32, @floatFromInt(state.player.skill3.timer)) / @as(f32, @floatFromInt(state.player.skill3.cooldown));
+            const end_angle = 360.0 * ready - 90.0;
+            rl.drawRing(
+                center,
+                0,
+                rect.width / 2,
+                270.0,
+                end_angle,
+                0,
+                rl.colorAlpha(rl.Color.black, 0.7),
+            );
+        }
     }
 };

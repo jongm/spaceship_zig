@@ -45,7 +45,7 @@ pub var enemy_config = con.EnemyConfig{
     .tex_h = 272,
     .width = 90,
     .height = 61,
-    .speed = 5,
+    .speed = 4,
     .health = 1,
     .move_delay = 100,
     .shoot_delay = 200,
@@ -58,6 +58,30 @@ pub var bullet_config = con.BulletConfig{
     .width = 20,
     .speed = 20,
     .tex_x = 69,
+    .tex_y = 225,
+    .tex_w = 10,
+    .tex_h = 20,
+    .texture = undefined,
+    .sound = undefined,
+};
+
+pub var bullet_bomb_config = con.BulletConfig{
+    .height = 45,
+    .width = 30,
+    .speed = 10,
+    .tex_x = 215,
+    .tex_y = 288,
+    .tex_w = 10,
+    .tex_h = 13,
+    .texture = undefined,
+    .sound = undefined,
+};
+
+pub var bullet_bomb_bullet_config = con.BulletConfig{
+    .height = 30,
+    .width = 20,
+    .speed = 20,
+    .tex_x = 8,
     .tex_y = 225,
     .tex_w = 10,
     .tex_h = 20,

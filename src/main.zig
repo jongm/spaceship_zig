@@ -29,6 +29,7 @@ pub fn main() !void {
     background_texture.width = val.game_config.screen_width;
     background_texture.height = val.game_config.screen_height;
 
+    // Skill Wheel
     const sword_wheel_texture = try rl.loadTexture("assets/circle_sword.png");
     defer rl.unloadTexture(sword_wheel_texture);
     const bullet_wheel_texture = try rl.loadTexture("assets/circle_bullet.png");
@@ -39,7 +40,7 @@ pub fn main() !void {
     defer rl.unloadTexture(x_wheel_texture);
     const y_wheel_texture = try rl.loadTexture("assets/circle_y.png");
     defer rl.unloadTexture(y_wheel_texture);
-    const r2_wheel_texture = try rl.loadTexture("assets/circle_r2.png");
+    const r2_wheel_texture = try rl.loadTexture("assets/circle_bulletbomb.png");
     defer rl.unloadTexture(r2_wheel_texture);
     const l1_wheel_texture = try rl.loadTexture("assets/circle_l1.png");
     defer rl.unloadTexture(l1_wheel_texture);
@@ -53,6 +54,7 @@ pub fn main() !void {
     val.wheel_config.l1_texture = l1_wheel_texture;
     val.wheel_config.l2_texture = l2_wheel_texture;
 
+    // Entities
     const player_texture = try rl.loadTexture("assets/ship1.png");
     defer rl.unloadTexture(player_texture);
     val.player_config.texture = player_texture;
@@ -64,6 +66,8 @@ pub fn main() !void {
     const bullets_texture = try rl.loadTexture("assets/bullets1.png");
     defer rl.unloadTexture(bullets_texture);
     val.bullet_config.texture = bullets_texture;
+    val.bullet_bomb_config.texture = bullets_texture;
+    val.bullet_bomb_bullet_config.texture = bullets_texture;
 
     const sword_texture = try rl.loadTexture("assets/sword1.png");
     defer rl.unloadTexture(sword_texture);
@@ -94,9 +98,14 @@ pub fn main() !void {
 
     // Create objects
     var player = obj.Player.init(val.player_config);
-    var bullets: [10]obj.Bullet = undefined;
-    var enemies: [20]obj.Enemy = undefined;
+    var bullets_arr: [10]obj.Bullet = undefined;
+    var bullets: obj.MaxArray(obj.Bullet) = .{ .list = &bullets_arr };
+    var bomb_bullets_arr: [20]obj.Bullet = undefined;
+    var bomb_bullets: obj.MaxArray(obj.Bullet) = .{ .list = &bomb_bullets_arr };
+    var enemies_arr: [50]obj.Enemy = undefined;
+    var enemies: obj.MaxArray(obj.Enemy) = .{ .list = &enemies_arr };
     var sword: obj.Sword = undefined;
+    var bomb: obj.BulletBomb = undefined;
     var spawn_timer: u32 = 0;
 
     const skill_wheel = men.SkillWheel.init(val.wheel_config);
@@ -111,14 +120,22 @@ pub fn main() !void {
         .timer = 100,
         .icon = undefined,
     };
+    var bullet_bomb_skill = ski.BulletBombSkill{
+        .cooldown = 300,
+        .timer = 300,
+        .icon = undefined,
+    };
     player.skill1 = &shoot_skill;
     player.skill2 = &sword_skill;
+    player.skill3 = &bullet_bomb_skill;
 
     const state = con.GameState{
         .player = &player,
         .bullets = &bullets,
+        .bomb_bullets = &bomb_bullets,
         .enemies = &enemies,
         .sword = &sword,
+        .bomb = &bomb,
         .spawn_timer = &spawn_timer,
         .game_config = &val.game_config,
         .game_status = &game_status,
@@ -159,6 +176,7 @@ pub fn main() !void {
                 spawn_timer += 1;
                 player.skill1.timer += 1;
                 player.skill2.timer += 1;
+                player.skill3.timer += 1;
 
                 rl.updateMusicStream(bgm_music);
 
@@ -168,7 +186,8 @@ pub fn main() !void {
                 // Spawn enemies
                 if (spawn_timer >= val.game_config.spawn_delay) {
                     spawn_timer = 0;
-                    for (enemies, 0..) |enemy, i| {
+                    for (0..enemies.max + 1) |i| {
+                        const enemy = &enemies.list[i];
                         if (!enemy.alive) {
                             const position = uti.get_random_border_position(val.game_config.screen_width, val.game_config.screen_height);
                             var new_enemy = obj.Enemy.init(
@@ -178,21 +197,27 @@ pub fn main() !void {
                                 position.y,
                             );
                             new_enemy.alive = true;
-                            enemies[i] = new_enemy;
+                            enemies.list[i] = new_enemy;
+                            if (i == enemies.max) {
+                                enemies.max += 1;
+                            }
                             break;
                         }
                     }
                 }
 
                 // Update skills
-                for (&bullets) |*bullet| {
-                    bullet.update(state);
+                for (0..bullets.max) |i| {
+                    bullets.list[i].update(state);
                 }
                 sword.update(player.drawable, state);
-
+                bomb.update(state);
+                for (0..bomb_bullets.max) |i| {
+                    bomb_bullets.list[i].update(state);
+                }
                 // Update enemies
-                for (&enemies) |*enemy| {
-                    enemy.update(state);
+                for (0..enemies.max) |i| {
+                    state.enemies.list[i].update(state);
                 }
 
                 // Update player
@@ -207,14 +232,19 @@ pub fn main() !void {
 
                 uti.draw_object(player.drawable);
 
-                for (enemies) |enemy| {
-                    enemy.draw();
+                for (0..enemies.max) |i| {
+                    enemies.list[i].draw();
                 }
 
-                for (bullets) |bullet| {
-                    bullet.draw();
+                for (0..bullets.max) |i| {
+                    bullets.list[i].draw();
                 }
                 sword.draw();
+
+                bomb.draw();
+                for (0..bomb_bullets.max) |i| {
+                    bomb_bullets.list[i].draw();
+                }
 
                 skill_wheel.draw(state);
             },

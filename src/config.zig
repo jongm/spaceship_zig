@@ -10,9 +10,11 @@ pub const GameStatus = enum {
 
 pub const GameState = struct {
     player: *obj.Player,
-    bullets: []obj.Bullet,
-    enemies: []obj.Enemy,
+    bullets: *obj.MaxArray(obj.Bullet),
+    bomb_bullets: *obj.MaxArray(obj.Bullet),
+    enemies: *obj.MaxArray(obj.Enemy),
     sword: *obj.Sword,
+    bomb: *obj.BulletBomb,
     spawn_timer: *u32,
     game_config: *const GameConfig,
     game_status: *GameStatus,
