@@ -20,15 +20,25 @@ pub fn MaxArray(T: type) type {
     };
 }
 
+pub const player_effect = enum {
+    normal,
+    shielded,
+    damaged,
+};
+
 pub const Player = struct {
     drawable: Drawable,
     speed: f32,
     health: u32,
     score: u32,
+    immune: bool,
+    immune_timer: u32 = 0,
+    effect: player_effect = .normal,
     skill1_toggled: bool,
     skill1: *ski.BulletSkill = undefined,
     skill2: *ski.SwordSkill = undefined,
     skill3: *ski.BulletBombSkill = undefined,
+    skill4: *ski.ShieldSkill = undefined,
 
     pub fn init(config: con.PlayerConfig) @This() {
         const rect_source = rl.Rectangle.init(
@@ -54,6 +64,7 @@ pub const Player = struct {
             .health = config.health,
             .score = 0,
             .skill1_toggled = false,
+            .immune = false,
         };
     }
 
@@ -63,6 +74,45 @@ pub const Player = struct {
         }
         if (self.skill1_toggled) {
             self.skill1.use(state);
+        }
+        switch (self.effect) {
+            .shielded => {
+                self.immune_timer -|= 1;
+                if (self.immune_timer == 0) {
+                    self.immune = false;
+                    self.effect = .normal;
+                }
+            },
+            .damaged => {
+                self.immune_timer -|= 1;
+                if (self.immune_timer == 0) {
+                    self.immune = false;
+                    self.effect = .normal;
+                }
+            },
+            else => {},
+        }
+    }
+
+    pub fn draw(self: @This()) void {
+        uti.draw_object(self.drawable);
+        switch (self.effect) {
+            .shielded => {
+                uti.draw_shield(self.drawable);
+            },
+            .damaged => {
+                uti.draw_damaged(self.drawable);
+            },
+            else => {},
+        }
+    }
+
+    pub fn get_damage(self: *@This(), dmg: u32) void {
+        if (!self.immune) {
+            self.health -|= dmg;
+            self.immune = true;
+            self.immune_timer = 60;
+            self.effect = .damaged;
         }
     }
 
@@ -79,6 +129,7 @@ pub const Enemy = struct {
     move_delay: u32,
     shoot_delay: u32,
     health: u32,
+    damage: u32,
     move_timer: u32 = 0,
     shoot_timer: u32 = 0,
     alive: bool = false,
@@ -107,6 +158,7 @@ pub const Enemy = struct {
             .move_delay = config.move_delay,
             .shoot_delay = config.shoot_delay,
             .health = config.health,
+            .damage = config.damage,
         };
     }
 
@@ -114,8 +166,10 @@ pub const Enemy = struct {
         if (self.alive) {
             uti.move_towards(&self.drawable, &state.player.drawable, self.speed);
             if (rl.checkCollisionRecs(self.drawable.rect_dest, state.player.drawable.rect_dest)) {
-                state.player.health -|= 1;
-                self.alive = false;
+                state.player.get_damage(self.damage);
+                if (!state.player.immune) {
+                    self.alive = false;
+                }
             }
             if (self.health == 0) {
                 self.die(state);
@@ -256,6 +310,9 @@ pub const Bullet = struct {
                 if (enemy.alive) {
                     if (rl.checkCollisionRecs(enemy.drawable.rect_dest, self.drawable.rect_dest)) {
                         enemy.health -|= 1;
+                        if (enemy.health == 0) {
+                            enemy.die(state);
+                        }
                         self.active = false;
                     }
                 }

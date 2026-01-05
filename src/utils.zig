@@ -16,6 +16,7 @@ pub fn reset_game_status(state: con.GameState) void {
             .shoot_delay = undefined,
             .alive = false,
             .health = undefined,
+            .damage = undefined,
         };
     }
     state.spawn_timer.* = 0;
@@ -38,6 +39,38 @@ pub fn draw_object(object: obj.Drawable) void {
         .{ .x = x_shift, .y = y_shift },
         object.facing,
         rl.Color.white,
+    );
+}
+
+pub fn draw_shield(object: obj.Drawable) void {
+    const center = rl.Vector2{
+        .x = object.rect_dest.x + object.rect_dest.width / 2,
+        .y = object.rect_dest.y + object.rect_dest.height / 2,
+    };
+    rl.drawRing(
+        center,
+        0,
+        object.rect_dest.width * 1.5 / 2,
+        0.0,
+        360.0,
+        0,
+        rl.colorAlpha(rl.Color.blue, 0.6),
+    );
+}
+
+pub fn draw_damaged(object: obj.Drawable) void {
+    const center = rl.Vector2{
+        .x = object.rect_dest.x + object.rect_dest.width / 2,
+        .y = object.rect_dest.y + object.rect_dest.height / 2,
+    };
+    rl.drawRing(
+        center,
+        0,
+        object.rect_dest.width / 2,
+        0.0,
+        360.0,
+        0,
+        rl.colorAlpha(rl.Color.red, 0.6),
     );
 }
 

@@ -36,7 +36,7 @@ pub fn main() !void {
     defer rl.unloadTexture(bullet_wheel_texture);
     const empty_wheel_texture = try rl.loadTexture("assets/circle_empty.png");
     defer rl.unloadTexture(empty_wheel_texture);
-    const x_wheel_texture = try rl.loadTexture("assets/circle_x.png");
+    const x_wheel_texture = try rl.loadTexture("assets/circle_shield.png");
     defer rl.unloadTexture(x_wheel_texture);
     const y_wheel_texture = try rl.loadTexture("assets/circle_y.png");
     defer rl.unloadTexture(y_wheel_texture);
@@ -125,9 +125,15 @@ pub fn main() !void {
         .timer = 300,
         .icon = undefined,
     };
+    var shield_skill = ski.ShieldSkill{
+        .cooldown = 400,
+        .timer = 400,
+        .icon = undefined,
+    };
     player.skill1 = &shoot_skill;
     player.skill2 = &sword_skill;
     player.skill3 = &bullet_bomb_skill;
+    player.skill4 = &shield_skill;
 
     const state = con.GameState{
         .player = &player,
@@ -177,6 +183,7 @@ pub fn main() !void {
                 player.skill1.timer += 1;
                 player.skill2.timer += 1;
                 player.skill3.timer += 1;
+                player.skill4.timer += 1;
 
                 rl.updateMusicStream(bgm_music);
 
@@ -230,7 +237,7 @@ pub fn main() !void {
                 const score_text = rl.textFormat("Score: %d", .{player.score});
                 rl.drawText(score_text, 1400, 10, 40, rl.Color.green);
 
-                uti.draw_object(player.drawable);
+                player.draw();
 
                 for (0..enemies.max) |i| {
                     enemies.list[i].draw();

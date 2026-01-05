@@ -47,6 +47,7 @@ pub var enemy_config = con.EnemyConfig{
     .height = 61,
     .speed = 4,
     .health = 1,
+    .damage = 1,
     .move_delay = 100,
     .shoot_delay = 200,
     .texture = undefined,

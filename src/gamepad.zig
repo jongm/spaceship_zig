@@ -25,18 +25,19 @@ pub fn handle_controls(state: con.GameState) void {
         state.player.drawable.facing = turn_target;
     }
 
-    // Skill 1
     if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_face_right)) {
         state.player.skill1_toggled = !state.player.skill1_toggled;
     }
 
-    // Skill 2
     if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_trigger_1)) {
         state.player.skill2.use(state);
     }
 
-    // Skill 3
     if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_trigger_2)) {
         state.player.skill3.use(state);
+    }
+
+    if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_face_left)) {
+        state.player.skill4.use(state);
     }
 }

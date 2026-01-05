@@ -52,6 +52,22 @@ pub const SwordSkill = struct {
     }
 };
 
+pub const ShieldSkill = struct {
+    cooldown: u32,
+    timer: u32,
+    icon: rl.Texture,
+
+    pub fn use(self: *@This(), state: con.GameState) void {
+        if (self.timer >= self.cooldown) {
+            state.player.immune = true;
+            state.player.immune_timer = 120;
+            state.player.effect = .shielded;
+            self.timer = 0;
+            // rl.playSound(val.sword_config.sound);
+        }
+    }
+};
+
 pub const BulletBombSkill = struct {
     cooldown: u32,
     timer: u32,

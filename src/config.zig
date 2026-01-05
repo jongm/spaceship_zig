@@ -67,6 +67,7 @@ pub const EnemyConfig = struct {
     height: f32,
     speed: f32,
     health: u32,
+    damage: u32,
     shoot_delay: u32,
     move_delay: u32,
     texture: rl.Texture,
