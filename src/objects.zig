@@ -154,6 +154,7 @@ pub const Enemy = struct {
     move_timer: u32 = 0,
     shoot_timer: u32 = 0,
     active: bool = false,
+    sword_dmg_id: u32 = 0,
 
     pub fn init(config: con.EnemyConfig, facing: f32, start_x: f32, start_y: f32) @This() {
         const rect_source = rl.Rectangle.init(
@@ -199,13 +200,13 @@ pub const Enemy = struct {
         }
     }
 
-    pub fn spawn(state: con.GameState) void {
+    pub fn spawn(state: con.GameState, config: con.EnemyConfig) void {
         const position = uti.get_random_border_position(
             val.game_config.map_width,
             val.game_config.map_height,
         );
         const new_enemy = Enemy.init(
-            val.enemy_config,
+            config,
             0.0,
             position.x,
             position.y,
@@ -216,7 +217,7 @@ pub const Enemy = struct {
     pub fn die(self: *@This(), state: con.GameState) void {
         self.active = false;
         state.player.score += 1;
-        rl.playSound(val.enemy_config.death_sound);
+        // rl.playSound(val.enemy_config.death_sound);
     }
 
     pub fn draw(self: @This()) void {
@@ -230,6 +231,7 @@ pub const BulletBomb = struct {
     drawable: Drawable,
     speed: f32,
     active: bool,
+    damage: u32,
 
     pub fn init(config: con.BulletConfig, x: f32, y: f32, facing: f32) @This() {
         const rect_source = rl.Rectangle.init(
@@ -253,6 +255,7 @@ pub const BulletBomb = struct {
             },
             .speed = config.speed,
             .active = true,
+            .damage = config.damage,
         };
     }
 
@@ -268,6 +271,7 @@ pub const BulletBomb = struct {
                 const enemy = &state.enemies.list[i];
                 if (enemy.active) {
                     if (rl.checkCollisionRecs(enemy.drawable.rect_dest, self.drawable.rect_dest)) {
+                        enemy.health -|= self.damage;
                         self.explode(state);
                     }
                 }
@@ -306,6 +310,7 @@ pub const Bullet = struct {
     drawable: Drawable,
     speed: f32,
     active: bool,
+    damage: u32,
 
     pub fn init(config: con.BulletConfig, x: f32, y: f32, facing: f32) @This() {
         const rect_source = rl.Rectangle.init(
@@ -329,6 +334,7 @@ pub const Bullet = struct {
             },
             .speed = config.speed,
             .active = true,
+            .damage = config.damage,
         };
     }
 
@@ -344,7 +350,7 @@ pub const Bullet = struct {
                 const enemy = &state.enemies.list[i];
                 if (enemy.active) {
                     if (rl.checkCollisionRecs(enemy.drawable.rect_dest, self.drawable.rect_dest)) {
-                        enemy.health -|= 1;
+                        enemy.health -|= self.damage;
                         if (enemy.health == 0) {
                             enemy.die(state);
                         }
@@ -369,6 +375,10 @@ pub const Sword = struct {
     active: bool,
     travelled: f32,
     gap: f32,
+    dmg_id: u32,
+    damage: u32,
+
+    pub var sword_id: u32 = 1;
 
     pub fn init(config: con.SwordConfig, origin: Drawable) @This() {
         var sword: @This() = .{
@@ -377,7 +387,10 @@ pub const Sword = struct {
             .active = true,
             .travelled = 0,
             .gap = config.gap,
+            .damage = config.damage,
+            .dmg_id = sword_id,
         };
+        sword_id += 1;
         const block_tex_height = config.tex_h / sword_rects;
         const block_dest_height = config.height / sword_rects;
         for (0..sword_rects) |n| {
@@ -402,7 +415,6 @@ pub const Sword = struct {
             };
             sword.rects[n] = rect;
         }
-
         return sword;
     }
 
@@ -425,7 +437,10 @@ pub const Sword = struct {
                 if (enemy.active) {
                     for (self.rects) |rect| {
                         if (rl.checkCollisionRecs(enemy.drawable.rect_dest, rect.rect_dest)) {
-                            enemy.health -|= 1;
+                            if (enemy.sword_dmg_id < self.dmg_id) {
+                                enemy.health -|= self.damage;
+                                enemy.sword_dmg_id = self.dmg_id;
+                            }
                         }
                     }
                 }

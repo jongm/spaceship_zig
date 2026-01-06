@@ -8,7 +8,10 @@ const bg_rows: usize = 3;
 pub const game_config = con.GameConfig{
     .screen_width = 1600,
     .screen_height = 1000,
-    .spawn_delay = 30,
+    .spawn_delay_e1 = 40,
+    .spawn_delay_e2 = 70,
+    .spawn_delay_e3 = 200,
+    .spawn_delay_e4 = 400,
     .max_bullet_distance = 2000,
     .tile_width = tile_width,
     .tile_height = tile_height,
@@ -50,7 +53,263 @@ pub var player_config = con.PlayerConfig{
     .death_sound = undefined,
 };
 
-pub var enemy_config = con.EnemyConfig{
+pub var ovni_config = con.EnemyConfig{
+    .tex_x = 0,
+    .tex_y = 0,
+    .tex_w = 402,
+    .tex_h = 272,
+    .width = 90,
+    .height = 61,
+    .speed = 4,
+    .health = 1,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy11_config = con.EnemyConfig{
+    .tex_x = 36,
+    .tex_y = 34,
+    .tex_w = 56,
+    .tex_h = 51,
+    .width = 56 * 1.2,
+    .height = 51 * 1.2,
+    .speed = 5,
+    .health = 1,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy12_config = con.EnemyConfig{
+    .tex_x = 159,
+    .tex_y = 16,
+    .tex_w = 66 * 1.1,
+    .tex_h = 97 * 1.1,
+    .width = 66,
+    .height = 97,
+    .speed = 4,
+    .health = 2,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy13_config = con.EnemyConfig{
+    .tex_x = 287,
+    .tex_y = 6,
+    .tex_w = 66,
+    .tex_h = 116,
+    .width = 66 * 1.5,
+    .height = 116 * 1.5,
+    .speed = 4,
+    .health = 5,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy14_config = con.EnemyConfig{
+    .tex_x = 403,
+    .tex_y = 2,
+    .tex_w = 90,
+    .tex_h = 123,
+    .width = 90 * 2,
+    .height = 123 * 2,
+    .speed = 3,
+    .health = 20,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy21_config = con.EnemyConfig{
+    .tex_x = 0,
+    .tex_y = 0,
+    .tex_w = 402,
+    .tex_h = 272,
+    .width = 90,
+    .height = 61,
+    .speed = 4,
+    .health = 1,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy22_config = con.EnemyConfig{
+    .tex_x = 0,
+    .tex_y = 0,
+    .tex_w = 402,
+    .tex_h = 272,
+    .width = 90,
+    .height = 61,
+    .speed = 4,
+    .health = 1,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy23_config = con.EnemyConfig{
+    .tex_x = 0,
+    .tex_y = 0,
+    .tex_w = 402,
+    .tex_h = 272,
+    .width = 90,
+    .height = 61,
+    .speed = 4,
+    .health = 1,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy24_config = con.EnemyConfig{
+    .tex_x = 0,
+    .tex_y = 0,
+    .tex_w = 402,
+    .tex_h = 272,
+    .width = 90,
+    .height = 61,
+    .speed = 4,
+    .health = 1,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy31_config = con.EnemyConfig{
+    .tex_x = 0,
+    .tex_y = 0,
+    .tex_w = 402,
+    .tex_h = 272,
+    .width = 90,
+    .height = 61,
+    .speed = 4,
+    .health = 1,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy32_config = con.EnemyConfig{
+    .tex_x = 0,
+    .tex_y = 0,
+    .tex_w = 402,
+    .tex_h = 272,
+    .width = 90,
+    .height = 61,
+    .speed = 4,
+    .health = 1,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy33_config = con.EnemyConfig{
+    .tex_x = 0,
+    .tex_y = 0,
+    .tex_w = 402,
+    .tex_h = 272,
+    .width = 90,
+    .height = 61,
+    .speed = 4,
+    .health = 1,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy34_config = con.EnemyConfig{
+    .tex_x = 0,
+    .tex_y = 0,
+    .tex_w = 402,
+    .tex_h = 272,
+    .width = 90,
+    .height = 61,
+    .speed = 4,
+    .health = 1,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy41_config = con.EnemyConfig{
+    .tex_x = 0,
+    .tex_y = 0,
+    .tex_w = 402,
+    .tex_h = 272,
+    .width = 90,
+    .height = 61,
+    .speed = 4,
+    .health = 1,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy42_config = con.EnemyConfig{
+    .tex_x = 0,
+    .tex_y = 0,
+    .tex_w = 402,
+    .tex_h = 272,
+    .width = 90,
+    .height = 61,
+    .speed = 4,
+    .health = 1,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy43_config = con.EnemyConfig{
+    .tex_x = 0,
+    .tex_y = 0,
+    .tex_w = 402,
+    .tex_h = 272,
+    .width = 90,
+    .height = 61,
+    .speed = 4,
+    .health = 1,
+    .damage = 1,
+    .move_delay = 100,
+    .shoot_delay = 200,
+    .texture = undefined,
+    .death_sound = undefined,
+};
+
+pub var enemy44_config = con.EnemyConfig{
     .tex_x = 0,
     .tex_y = 0,
     .tex_w = 402,
@@ -74,6 +333,7 @@ pub var bullet_config = con.BulletConfig{
     .tex_y = 225,
     .tex_w = 10,
     .tex_h = 20,
+    .damage = 1,
     .texture = undefined,
     .sound = undefined,
 };
@@ -86,6 +346,7 @@ pub var bullet_bomb_config = con.BulletConfig{
     .tex_y = 288,
     .tex_w = 10,
     .tex_h = 13,
+    .damage = 5,
     .texture = undefined,
     .sound = undefined,
 };
@@ -98,6 +359,7 @@ pub var bullet_bomb_bullet_config = con.BulletConfig{
     .tex_y = 225,
     .tex_w = 10,
     .tex_h = 20,
+    .damage = 2,
     .texture = undefined,
     .sound = undefined,
 };
@@ -111,6 +373,7 @@ pub var sword_config = con.SwordConfig{
     .tex_w = 80,
     .tex_h = 297,
     .gap = 200,
+    .damage = 2,
     .texture = undefined,
     .sound = undefined,
 };

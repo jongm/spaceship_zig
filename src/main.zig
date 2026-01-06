@@ -24,7 +24,7 @@ pub fn main() !void {
     rl.setTargetFPS(60);
 
     // Load Assets
-    const background_texture = try rl.loadTexture("assets/backgrounds/Purple Nebula/Purple_Nebula_01-1024x1024.png");
+    const background_texture = try rl.loadTexture("assets/backgrounds/Blue Nebula/Blue_Nebula_01-1024x1024.png");
     defer rl.unloadTexture(background_texture);
     const bg_rect_orig = rl.Rectangle{
         .x = 0,
@@ -78,9 +78,24 @@ pub fn main() !void {
     defer rl.unloadTexture(player_texture);
     val.player_config.texture = player_texture;
 
-    const enemy_texture = try rl.loadTexture("assets/alien1.png");
-    defer rl.unloadTexture(enemy_texture);
-    val.enemy_config.texture = enemy_texture;
+    const ships_texture = try rl.loadTexture("assets/ships1.png");
+    defer rl.unloadTexture(ships_texture);
+    val.enemy11_config.texture = ships_texture;
+    val.enemy12_config.texture = ships_texture;
+    val.enemy13_config.texture = ships_texture;
+    val.enemy14_config.texture = ships_texture;
+    val.enemy21_config.texture = ships_texture;
+    val.enemy22_config.texture = ships_texture;
+    val.enemy23_config.texture = ships_texture;
+    val.enemy24_config.texture = ships_texture;
+    val.enemy31_config.texture = ships_texture;
+    val.enemy32_config.texture = ships_texture;
+    val.enemy33_config.texture = ships_texture;
+    val.enemy34_config.texture = ships_texture;
+    val.enemy41_config.texture = ships_texture;
+    val.enemy42_config.texture = ships_texture;
+    val.enemy43_config.texture = ships_texture;
+    val.enemy44_config.texture = ships_texture;
 
     const bullets_texture = try rl.loadTexture("assets/bullets1.png");
     defer rl.unloadTexture(bullets_texture);
@@ -105,8 +120,8 @@ pub fn main() !void {
 
     const explo1_sound = try rl.loadSound("sfx/explosion_short1.wav");
     rl.setSoundVolume(explo1_sound, 0.3);
-    defer rl.unloadSound(explo1_sound);
-    val.enemy_config.death_sound = explo1_sound;
+    // defer rl.unloadSound(explo1_sound);
+    // val.enemy_config.death_sound = explo1_sound;
 
     const explo2_sound = try rl.loadSound("sfx/destroyed1.wav");
     defer rl.unloadSound(explo2_sound);
@@ -125,7 +140,10 @@ pub fn main() !void {
     var enemies: obj.MaxArray(obj.Enemy) = .{ .list = &enemies_arr };
     var sword: obj.Sword = undefined;
     var bomb: obj.BulletBomb = undefined;
-    var spawn_timer: u32 = 0;
+    var spawn_timer_e1: u32 = 0;
+    var spawn_timer_e2: u32 = 0;
+    var spawn_timer_e3: u32 = 0;
+    var spawn_timer_e4: u32 = 0;
     var player_skills = [_]ski.Skill{
         ski.shoot_skill,
         ski.sword_skill,
@@ -142,13 +160,15 @@ pub fn main() !void {
         .enemies = &enemies,
         .sword = &sword,
         .bomb = &bomb,
-        .spawn_timer = &spawn_timer,
+        .spawn_timer_e1 = &spawn_timer_e1,
+        .spawn_timer_e2 = &spawn_timer_e2,
+        .spawn_timer_e3 = &spawn_timer_e3,
+        .spawn_timer_e4 = &spawn_timer_e4,
         .game_config = &val.game_config,
         .game_status = &game_status,
     };
 
-    uti.reset_game_status(state);
-    player.skills = &player_skills;
+    uti.reset_game_status(state, &player_skills);
 
     rl.playMusicStream(bgm_music);
 
@@ -186,7 +206,7 @@ pub fn main() !void {
                 rl.drawText("Press A to restart", val.game_config.screen_width / 2, val.game_config.screen_height / 2, 30, rl.Color.red);
                 rl.stopMusicStream(bgm_music);
                 if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_face_down)) {
-                    uti.reset_game_status(state);
+                    uti.reset_game_status(state, &player_skills);
                     player.skills = &player_skills;
                     rl.playMusicStream(bgm_music);
                     game_status = .gameplay;
@@ -198,7 +218,10 @@ pub fn main() !void {
                 }
 
                 // Timers
-                spawn_timer += 1;
+                spawn_timer_e1 += 1;
+                spawn_timer_e2 += 1;
+                spawn_timer_e3 += 1;
+                spawn_timer_e4 += 1;
                 for (player.skills) |*skill| {
                     skill.timer += 1;
                 }
@@ -212,9 +235,21 @@ pub fn main() !void {
                 uti.update_camera(&camera, player.drawable.rect_dest);
 
                 // Spawn enemies
-                if (spawn_timer >= val.game_config.spawn_delay) {
-                    spawn_timer = 0;
-                    obj.Enemy.spawn(state);
+                if (spawn_timer_e1 >= val.game_config.spawn_delay_e1) {
+                    spawn_timer_e1 = 0;
+                    obj.Enemy.spawn(state, val.enemy11_config);
+                }
+                if (spawn_timer_e2 >= val.game_config.spawn_delay_e2) {
+                    spawn_timer_e2 = 0;
+                    obj.Enemy.spawn(state, val.enemy12_config);
+                }
+                if (spawn_timer_e3 >= val.game_config.spawn_delay_e3) {
+                    spawn_timer_e3 = 0;
+                    obj.Enemy.spawn(state, val.enemy13_config);
+                }
+                if (spawn_timer_e4 >= val.game_config.spawn_delay_e4) {
+                    spawn_timer_e4 = 0;
+                    obj.Enemy.spawn(state, val.enemy14_config);
                 }
 
                 // Update skills

@@ -15,7 +15,10 @@ pub const GameState = struct {
     enemies: *obj.MaxArray(obj.Enemy),
     sword: *obj.Sword,
     bomb: *obj.BulletBomb,
-    spawn_timer: *u32,
+    spawn_timer_e1: *u32,
+    spawn_timer_e2: *u32,
+    spawn_timer_e3: *u32,
+    spawn_timer_e4: *u32,
     game_config: *const GameConfig,
     game_status: *GameStatus,
 };
@@ -23,7 +26,10 @@ pub const GameState = struct {
 pub const GameConfig = struct {
     screen_width: f32,
     screen_height: f32,
-    spawn_delay: u32,
+    spawn_delay_e1: u32,
+    spawn_delay_e2: u32,
+    spawn_delay_e3: u32,
+    spawn_delay_e4: u32,
     max_bullet_distance: f32,
     bg_cols: usize,
     bg_rows: usize,
@@ -89,6 +95,7 @@ pub const BulletConfig = struct {
     tex_y: f32,
     tex_w: f32,
     tex_h: f32,
+    damage: u32,
     texture: rl.Texture,
     sound: rl.Sound,
 };
@@ -104,4 +111,6 @@ pub const SwordConfig = struct {
     gap: f32,
     texture: rl.Texture,
     sound: rl.Sound,
+    sword_dmg_id: u32 = 0,
+    damage: u32,
 };

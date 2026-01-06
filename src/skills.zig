@@ -47,8 +47,8 @@ pub fn use_sword(self: *Skill, state: con.GameState) void {
 }
 
 pub var sword_skill = Skill{
-    .cooldown = 100,
-    .timer = 100,
+    .cooldown = 150,
+    .timer = 150,
     .icon = undefined,
     .use = use_sword,
 };

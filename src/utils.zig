@@ -2,12 +2,18 @@ const rl = @import("raylib");
 const obj = @import("objects.zig");
 const con = @import("config.zig");
 const val = @import("values.zig");
+const ski = @import("skills.zig");
 const std = @import("std");
 const math = std.math;
 
-pub fn reset_game_status(state: con.GameState) void {
+pub fn reset_game_status(state: con.GameState, skills: []ski.Skill) void {
     for (state.bullets.list, 0..) |_, i| {
-        state.bullets.list[i] = .{ .drawable = undefined, .speed = undefined, .active = false };
+        state.bullets.list[i] = .{
+            .drawable = undefined,
+            .speed = undefined,
+            .active = false,
+            .damage = undefined,
+        };
     }
     for (state.enemies.list, 0..) |_, i| {
         state.enemies.list[i] = .{
@@ -20,9 +26,17 @@ pub fn reset_game_status(state: con.GameState) void {
             .damage = undefined,
         };
     }
-    state.spawn_timer.* = 0;
+    state.spawn_timer_e1.* = 0;
+    state.spawn_timer_e2.* = 0;
+    state.spawn_timer_e3.* = 0;
+    state.spawn_timer_e4.* = 0;
     const player = obj.Player.init(val.player_config);
     state.player.* = player;
+    state.player.skills = skills;
+    for (state.player.skills) |*skill| {
+        skill.timer = skill.cooldown;
+        skill.toggled = false;
+    }
 }
 
 pub fn draw_object(object: obj.Drawable) void {
@@ -129,6 +143,7 @@ pub fn move_towards(object: *obj.Drawable, target: *obj.Drawable, speed: f32) vo
 
     object.rect_dest.x += move.x;
     object.rect_dest.y += move.y;
+    object.facing = angle + 90;
 }
 
 pub fn rotate_rect_around_origin(rect: *obj.Drawable, origin_x: f32, origin_y: f32) void {
