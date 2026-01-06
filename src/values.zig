@@ -1,9 +1,21 @@
 const con = @import("config.zig");
 
+const tile_width: f32 = 1024;
+const tile_height: f32 = 1024;
+const bg_cols: usize = 3;
+const bg_rows: usize = 3;
+
 pub const game_config = con.GameConfig{
     .screen_width = 1600,
     .screen_height = 1000,
     .spawn_delay = 30,
+    .max_bullet_distance = 2000,
+    .tile_width = tile_width,
+    .tile_height = tile_height,
+    .bg_cols = bg_cols,
+    .bg_rows = bg_rows,
+    .map_width = tile_width * bg_cols,
+    .map_height = tile_height * bg_rows,
 };
 
 pub var wheel_config = con.WheelConfig{
@@ -28,8 +40,8 @@ pub var player_config = con.PlayerConfig{
     .tex_y = 0,
     .tex_w = 392,
     .tex_h = 338,
-    .start_x = 820,
-    .start_y = 520,
+    .start_x = game_config.map_width / 2,
+    .start_y = game_config.map_height / 2,
     .width = 60,
     .height = 60,
     .speed = 10,

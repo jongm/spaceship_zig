@@ -20,14 +20,16 @@ pub fn MaxArray(T: type) type {
         max: usize = 1,
 
         pub fn add(self: *@This(), item: T) void {
-            for (0..self.max + 1) |i| {
-                const current = &self.list[i];
-                if (!current.active) {
-                    current.* = item;
-                    if (i == self.max) {
-                        self.max += 1;
+            if (self.max <= self.list.len) {
+                for (0..self.max + 1) |i| {
+                    const current = &self.list[i];
+                    if (!current.active) {
+                        current.* = item;
+                        if (i == self.max) {
+                            self.max += 1;
+                        }
+                        break;
                     }
-                    break;
                 }
             }
         }
@@ -107,10 +109,20 @@ pub const Player = struct {
         uti.draw_object(self.drawable);
         switch (self.effect) {
             .shielded => {
-                uti.draw_shield(self.drawable);
+                uti.draw_circle_around(
+                    self.drawable,
+                    0.8,
+                    rl.colorAlpha(rl.Color.blue, 0.0),
+                    rl.colorAlpha(rl.Color.sky_blue, 0.8),
+                );
             },
             .damaged => {
-                uti.draw_damaged(self.drawable);
+                uti.draw_circle_around(
+                    self.drawable,
+                    0.6,
+                    rl.colorAlpha(rl.Color.orange, 0.0),
+                    rl.colorAlpha(rl.Color.red, 0.8),
+                );
             },
             else => {},
         }
@@ -188,7 +200,10 @@ pub const Enemy = struct {
     }
 
     pub fn spawn(state: con.GameState) void {
-        const position = uti.get_random_border_position(val.game_config.screen_width, val.game_config.screen_height);
+        const position = uti.get_random_border_position(
+            val.game_config.map_width,
+            val.game_config.map_height,
+        );
         const new_enemy = Enemy.init(
             val.enemy_config,
             0.0,
@@ -246,7 +261,7 @@ pub const BulletBomb = struct {
             const moves = uti.get_angle_movement(self.speed, self.drawable.facing - 90);
             self.drawable.rect_dest.x += moves.x;
             self.drawable.rect_dest.y += moves.y;
-            if (self.drawable.rect_dest.x <= 0 or self.drawable.rect_dest.x >= state.game_config.screen_width or self.drawable.rect_dest.y <= 0 or self.drawable.rect_dest.y >= state.game_config.screen_height) {
+            if (uti.is_far_from_rect(self.drawable.rect_dest, state.player.drawable.rect_dest, val.game_config.max_bullet_distance)) {
                 self.active = false;
             }
             for (0..state.enemies.max) |i| {
@@ -276,7 +291,6 @@ pub const BulletBomb = struct {
                 state.bomb_bullets.list[i] = new_bullet;
                 state.bomb_bullets.max = amount + 1;
                 rl.playSound(val.bullet_config.sound);
-                std.debug.print("Created bullet {d}\n", .{i});
             }
         }
     }
@@ -323,7 +337,7 @@ pub const Bullet = struct {
             const moves = uti.get_angle_movement(self.speed, self.drawable.facing - 90);
             self.drawable.rect_dest.x += moves.x;
             self.drawable.rect_dest.y += moves.y;
-            if (self.drawable.rect_dest.x <= 0 or self.drawable.rect_dest.x >= state.game_config.screen_width or self.drawable.rect_dest.y <= 0 or self.drawable.rect_dest.y >= state.game_config.screen_height) {
+            if (uti.is_far_from_rect(self.drawable.rect_dest, state.player.drawable.rect_dest, val.game_config.max_bullet_distance)) {
                 self.active = false;
             }
             for (0..state.enemies.max) |i| {

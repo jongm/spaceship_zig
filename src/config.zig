@@ -24,6 +24,13 @@ pub const GameConfig = struct {
     screen_width: f32,
     screen_height: f32,
     spawn_delay: u32,
+    max_bullet_distance: f32,
+    bg_cols: usize,
+    bg_rows: usize,
+    map_width: f32,
+    map_height: f32,
+    tile_width: f32,
+    tile_height: f32,
 };
 
 pub const WheelConfig = struct {

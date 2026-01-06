@@ -13,8 +13,12 @@ pub fn handle_controls(state: con.GameState) void {
         const player_angle = uti.angle_from_gamepad(leftx, lefty);
         const player_speed = state.player.speed * @min(1.0, @abs(leftx) + @abs(lefty));
         const player_move = uti.get_angle_movement(player_speed, player_angle);
-        state.player.drawable.rect_dest.x += player_move.x;
-        state.player.drawable.rect_dest.y += player_move.y;
+        var new_x = state.player.drawable.rect_dest.x + player_move.x;
+        var new_y = state.player.drawable.rect_dest.y + player_move.y;
+        new_x = @min(@max(new_x, 0), val.game_config.map_width - state.player.drawable.rect_dest.width);
+        new_y = @min(@max(new_y, 0), val.game_config.map_height - state.player.drawable.rect_dest.height);
+        state.player.drawable.rect_dest.x = new_x;
+        state.player.drawable.rect_dest.y = new_y;
     }
 
     // Right joystick - Facing

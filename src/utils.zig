@@ -1,6 +1,7 @@
 const rl = @import("raylib");
 const obj = @import("objects.zig");
 const con = @import("config.zig");
+const val = @import("values.zig");
 const std = @import("std");
 const math = std.math;
 
@@ -20,8 +21,8 @@ pub fn reset_game_status(state: con.GameState) void {
         };
     }
     state.spawn_timer.* = 0;
-    state.player.score = 0;
-    state.player.health = 5; // MOVE TO CONFIG
+    const player = obj.Player.init(val.player_config);
+    state.player.* = player;
 }
 
 pub fn draw_object(object: obj.Drawable) void {
@@ -42,35 +43,19 @@ pub fn draw_object(object: obj.Drawable) void {
     );
 }
 
-pub fn draw_shield(object: obj.Drawable) void {
+pub fn draw_circle_around(object: obj.Drawable, width_ratio: f32, inner: rl.Color, outer: rl.Color) void {
     const center = rl.Vector2{
         .x = object.rect_dest.x + object.rect_dest.width / 2,
         .y = object.rect_dest.y + object.rect_dest.height / 2,
     };
-    rl.drawRing(
-        center,
-        0,
-        object.rect_dest.width * 1.5 / 2,
-        0.0,
-        360.0,
-        0,
-        rl.colorAlpha(rl.Color.blue, 0.6),
-    );
-}
-
-pub fn draw_damaged(object: obj.Drawable) void {
-    const center = rl.Vector2{
-        .x = object.rect_dest.x + object.rect_dest.width / 2,
-        .y = object.rect_dest.y + object.rect_dest.height / 2,
-    };
-    rl.drawRing(
-        center,
-        0,
-        object.rect_dest.width / 2,
-        0.0,
-        360.0,
-        0,
-        rl.colorAlpha(rl.Color.red, 0.6),
+    const x: i32 = @intFromFloat(center.x);
+    const y: i32 = @intFromFloat(center.y);
+    rl.drawCircleGradient(
+        x,
+        y,
+        object.rect_dest.width * width_ratio,
+        inner,
+        outer,
     );
 }
 
@@ -157,4 +142,38 @@ pub fn rotate_rect_around_origin(rect: *obj.Drawable, origin_x: f32, origin_y: f
 
     rect.rect_dest.x = (math.cos(angle) * dif_x) - (math.sin(angle) * dif_y) + origin_x;
     rect.rect_dest.y = (math.sin(angle) * dif_x) + (math.cos(angle) * dif_y) + origin_y;
+}
+
+pub fn is_far_from_rect(rect1: rl.Rectangle, rect2: rl.Rectangle, dist: f32) bool {
+    const dif_x = @abs(rect1.x - rect2.x);
+    const dif_y = @abs(rect1.y - rect2.y);
+    return (dif_x > dist or dif_y > dist);
+}
+
+pub fn update_camera(camera: *rl.Camera2D, rect: rl.Rectangle) void {
+    camera.target = .{
+        .x = rect.x,
+        .y = rect.y,
+    };
+    const min_x = @min(
+        val.game_config.screen_width / 2.0,
+        rect.x,
+    );
+    const min_y = @min(
+        val.game_config.screen_height / 2.0,
+        rect.y,
+    );
+
+    const max_x_mid = val.game_config.map_width - (val.game_config.screen_width / 2);
+    const max_y_mid = val.game_config.map_height - (val.game_config.screen_height / 2);
+    const dif_x = rect.x - max_x_mid;
+    const dif_y = rect.y - max_y_mid;
+
+    const offset_x = if (dif_x < 0) min_x else val.game_config.screen_width / 2 + dif_x;
+    const offset_y = if (dif_y < 0) min_y else val.game_config.screen_height / 2 + dif_y;
+
+    camera.offset = .{
+        .x = offset_x,
+        .y = offset_y,
+    };
 }

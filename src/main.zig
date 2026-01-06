@@ -24,10 +24,29 @@ pub fn main() !void {
     rl.setTargetFPS(60);
 
     // Load Assets
-    var background_texture = try rl.loadTexture("assets/spacebg1.png");
+    const background_texture = try rl.loadTexture("assets/backgrounds/Purple Nebula/Purple_Nebula_01-1024x1024.png");
     defer rl.unloadTexture(background_texture);
-    background_texture.width = val.game_config.screen_width;
-    background_texture.height = val.game_config.screen_height;
+    const bg_rect_orig = rl.Rectangle{
+        .x = 0,
+        .y = 0,
+        .width = 1024,
+        .height = 1024,
+    };
+    var bg_rects: [val.game_config.bg_rows * val.game_config.bg_cols]rl.Rectangle = undefined;
+    for (0..val.game_config.bg_cols) |col| {
+        const col_f: f32 = @floatFromInt(col);
+        for (0..val.game_config.bg_rows) |row| {
+            const row_f: f32 = @floatFromInt(row);
+            const bg_rect_dest = rl.Rectangle{
+                .x = val.game_config.tile_width * col_f,
+                .y = val.game_config.tile_height * row_f,
+                .width = val.game_config.tile_width,
+                .height = val.game_config.tile_height,
+            };
+            const n: usize = row * val.game_config.bg_cols + col;
+            bg_rects[n] = bg_rect_dest;
+        }
+    }
 
     // Skill Wheel
     const sword_wheel_texture = try rl.loadTexture("assets/circle_sword.png");
@@ -97,7 +116,7 @@ pub fn main() !void {
     defer rl.unloadMusicStream(bgm_music);
 
     // Create objects
-    var player = obj.Player.init(val.player_config);
+    var player: obj.Player = undefined;
     var bullets_arr: [10]obj.Bullet = undefined;
     var bullets: obj.MaxArray(obj.Bullet) = .{ .list = &bullets_arr };
     var bomb_bullets_arr: [20]obj.Bullet = undefined;
@@ -107,16 +126,14 @@ pub fn main() !void {
     var sword: obj.Sword = undefined;
     var bomb: obj.BulletBomb = undefined;
     var spawn_timer: u32 = 0;
-
-    const skill_wheel = men.SkillWheel.init(val.wheel_config);
-
     var player_skills = [_]ski.Skill{
         ski.shoot_skill,
         ski.sword_skill,
         ski.bullet_bomb_skill,
         ski.shield_skill,
     };
-    player.skills = &player_skills;
+
+    const skill_wheel = men.SkillWheel.init(val.wheel_config);
 
     const state = con.GameState{
         .player = &player,
@@ -131,8 +148,23 @@ pub fn main() !void {
     };
 
     uti.reset_game_status(state);
+    player.skills = &player_skills;
 
     rl.playMusicStream(bgm_music);
+
+    // Camera
+    var camera = rl.Camera2D{
+        .target = .{
+            .x = player.drawable.rect_dest.x,
+            .y = player.drawable.rect_dest.y,
+        },
+        .offset = .{
+            .x = val.game_config.screen_width / 2.0,
+            .y = val.game_config.screen_height / 2.0,
+        },
+        .rotation = 0.0,
+        .zoom = 1.0,
+    };
 
     // Main loop
     while (!rl.windowShouldClose()) {
@@ -155,6 +187,7 @@ pub fn main() !void {
                 rl.stopMusicStream(bgm_music);
                 if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_face_down)) {
                     uti.reset_game_status(state);
+                    player.skills = &player_skills;
                     rl.playMusicStream(bgm_music);
                     game_status = .gameplay;
                 }
@@ -163,6 +196,7 @@ pub fn main() !void {
                 if (rl.isGamepadButtonPressed(0, rl.GamepadButton.middle_right)) {
                     game_status = .pause;
                 }
+
                 // Timers
                 spawn_timer += 1;
                 for (player.skills) |*skill| {
@@ -173,6 +207,9 @@ pub fn main() !void {
 
                 // Control logic
                 gam.handle_controls(state);
+
+                // Camera
+                uti.update_camera(&camera, player.drawable.rect_dest);
 
                 // Spawn enemies
                 if (spawn_timer >= val.game_config.spawn_delay) {
@@ -198,14 +235,20 @@ pub fn main() !void {
                 player.update(state);
 
                 // Draw logic
-                rl.drawTexture(background_texture, 0, 0, rl.Color.white);
-                const health_text = rl.textFormat("Health: %d", .{player.health});
-                rl.drawText(health_text, 10, 10, 40, rl.Color.green);
-                const score_text = rl.textFormat("Score: %d", .{player.score});
-                rl.drawText(score_text, 1400, 10, 40, rl.Color.green);
+
+                rl.beginMode2D(camera);
+                for (bg_rects) |rect| {
+                    rl.drawTexturePro(
+                        background_texture,
+                        bg_rect_orig,
+                        rect,
+                        .{ .x = 0, .y = 0 },
+                        0.0,
+                        rl.Color.white,
+                    );
+                }
 
                 player.draw();
-
                 for (0..enemies.max) |i| {
                     enemies.list[i].draw();
                 }
@@ -219,6 +262,13 @@ pub fn main() !void {
                 for (0..bomb_bullets.max) |i| {
                     bomb_bullets.list[i].draw();
                 }
+
+                rl.endMode2D();
+
+                const health_text = rl.textFormat("Health: %d", .{player.health});
+                rl.drawText(health_text, 10, 10, 40, rl.Color.green);
+                const score_text = rl.textFormat("Score: %d", .{player.score});
+                rl.drawText(score_text, 1400, 10, 40, rl.Color.green);
 
                 skill_wheel.draw(state);
             },
