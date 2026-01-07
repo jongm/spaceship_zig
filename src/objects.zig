@@ -13,6 +13,33 @@ pub const Drawable = struct {
     facing: f32,
 };
 
+pub const Animation = struct {
+    drawable: Drawable,
+    frames: f32,
+    cols: f32,
+    rows: f32,
+    frame_len: u32,
+    timer: u32 = 0,
+    frame: f32 = 0,
+
+    pub fn update(self: *@This()) void {
+        self.timer += 1;
+        if (self.timer >= self.frame_len) {
+            self.frame += 1;
+            self.timer = 0;
+            if (self.frame == self.frames) {
+                self.frame = 0;
+            }
+            const col = @mod(self.frame, self.cols);
+            const row = @divFloor(self.frame, self.cols);
+            const new_x = self.drawable.rect_source.width * col;
+            const new_y = self.drawable.rect_source.height * row;
+            self.drawable.rect_source.x = new_x;
+            self.drawable.rect_source.y = new_y;
+        }
+    }
+};
+
 // Smart array that only grows in size when all elements are active
 pub fn MaxArray(T: type) type {
     return struct {
@@ -36,10 +63,15 @@ pub fn MaxArray(T: type) type {
     };
 }
 
-pub const player_effect = enum {
+pub const damage_status = enum {
     normal,
     shielded,
     damaged,
+};
+
+pub const player_effect = enum {
+    none,
+    speedboost,
 };
 
 pub const Player = struct {
@@ -49,7 +81,10 @@ pub const Player = struct {
     score: u32,
     immune: bool,
     immune_timer: u32 = 0,
-    effect: player_effect = .normal,
+    dmg_status: damage_status = .normal,
+    effect: player_effect = .none,
+    effect_timer: u32 = 0,
+    effect_animation: Animation = undefined,
     skills: []ski.Skill = undefined,
 
     pub fn init(config: con.PlayerConfig) @This() {
@@ -86,20 +121,34 @@ pub const Player = struct {
         if (self.skills[0].toggled) {
             self.skills[0].use(&self.skills[0], state);
         }
-        switch (self.effect) {
+        switch (self.dmg_status) {
             .shielded => {
                 self.immune_timer -|= 1;
                 if (self.immune_timer == 0) {
                     self.immune = false;
-                    self.effect = .normal;
+                    self.dmg_status = .normal;
                 }
             },
             .damaged => {
                 self.immune_timer -|= 1;
                 if (self.immune_timer == 0) {
                     self.immune = false;
-                    self.effect = .normal;
+                    self.dmg_status = .normal;
                 }
+            },
+            else => {},
+        }
+        switch (self.effect) {
+            .speedboost => {
+                self.effect_timer -|= 1;
+                if (self.effect_timer == 0) {
+                    self.effect = .none;
+                    self.speed = val.player_config.speed;
+                }
+                self.effect_animation.drawable.rect_dest.x = self.drawable.rect_dest.x;
+                self.effect_animation.drawable.rect_dest.y = self.drawable.rect_dest.y;
+                self.effect_animation.drawable.facing = self.drawable.facing;
+                self.effect_animation.update();
             },
             else => {},
         }
@@ -107,7 +156,7 @@ pub const Player = struct {
 
     pub fn draw(self: @This()) void {
         uti.draw_object(self.drawable);
-        switch (self.effect) {
+        switch (self.dmg_status) {
             .shielded => {
                 uti.draw_circle_around(
                     self.drawable,
@@ -126,6 +175,12 @@ pub const Player = struct {
             },
             else => {},
         }
+        switch (self.effect) {
+            .speedboost => {
+                uti.draw_object(self.effect_animation.drawable);
+            },
+            else => {},
+        }
     }
 
     pub fn get_damage(self: *@This(), dmg: u32) void {
@@ -133,7 +188,7 @@ pub const Player = struct {
             self.health -|= dmg;
             self.immune = true;
             self.immune_timer = 60;
-            self.effect = .damaged;
+            self.dmg_status = .damaged;
         }
     }
 
@@ -457,6 +512,67 @@ pub const Sword = struct {
             for (self.rects) |rect| {
                 uti.draw_object(rect);
             }
+        }
+    }
+};
+
+pub const Portal = struct {
+    animation: Animation,
+    active: bool,
+    damage: u32,
+
+    pub fn init(config: con.PortalConfig, x: f32, y: f32) @This() {
+        const rect_source = rl.Rectangle.init(
+            config.tex_x,
+            config.tex_y,
+            config.tex_w,
+            config.tex_h,
+        );
+        const rect_dest = rl.Rectangle.init(
+            x,
+            y,
+            config.width,
+            config.height,
+        );
+        return .{
+            .animation = .{
+                .drawable = .{
+                    .rect_dest = rect_dest,
+                    .rect_source = rect_source,
+                    .texture = config.texture,
+                    .facing = 0,
+                },
+                .cols = config.frame_cols,
+                .rows = config.frame_rows,
+                .frames = config.frames,
+                .frame_len = config.frame_len,
+                .timer = 0,
+            },
+            .active = true,
+            .damage = config.damage,
+        };
+    }
+
+    pub fn update(self: *@This(), state: con.GameState) void {
+        if (self.active) {
+            self.animation.update();
+            for (0..state.enemies.max) |i| {
+                const enemy = &state.enemies.list[i];
+                if (enemy.active) {
+                    if (rl.checkCollisionRecs(enemy.drawable.rect_dest, self.animation.drawable.rect_dest)) {
+                        enemy.health -|= self.damage;
+                        if (enemy.health == 0) {
+                            enemy.die(state);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn draw(self: @This()) void {
+        if (self.active) {
+            uti.draw_object(self.animation.drawable);
         }
     }
 };

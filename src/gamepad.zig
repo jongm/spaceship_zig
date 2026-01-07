@@ -48,4 +48,14 @@ pub fn handle_controls(state: con.GameState) void {
         const skill = &state.player.skills[3];
         skill.use(skill, state);
     }
+
+    if (rl.isGamepadButtonPressed(0, rl.GamepadButton.left_trigger_1)) {
+        const skill = &state.player.skills[4];
+        skill.use(skill, state);
+    }
+
+    if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_face_up)) {
+        const skill = &state.player.skills[5];
+        skill.use(skill, state);
+    }
 }

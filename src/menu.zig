@@ -146,6 +146,8 @@ pub const SkillWheel = struct {
                     1 => self.rect_r1.rect_dest,
                     2 => self.rect_r2.rect_dest,
                     3 => self.rect_left.rect_dest,
+                    4 => self.rect_l1.rect_dest,
+                    5 => self.rect_up.rect_dest,
                     else => continue,
                 };
                 const center = rl.Vector2{

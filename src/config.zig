@@ -14,6 +14,7 @@ pub const GameState = struct {
     bomb_bullets: *obj.MaxArray(obj.Bullet),
     enemies: *obj.MaxArray(obj.Enemy),
     sword: *obj.Sword,
+    portal: *obj.Portal,
     bomb: *obj.BulletBomb,
     spawn_timer_e1: *u32,
     spawn_timer_e2: *u32,
@@ -113,4 +114,33 @@ pub const SwordConfig = struct {
     sound: rl.Sound,
     sword_dmg_id: u32 = 0,
     damage: u32,
+};
+
+pub const PortalConfig = struct {
+    width: f32,
+    height: f32,
+    frame_len: u32,
+    frame_rows: f32,
+    frame_cols: f32,
+    frames: f32,
+    tex_x: f32,
+    tex_y: f32,
+    tex_w: f32,
+    tex_h: f32,
+    damage: u32,
+    texture: rl.Texture,
+    sound: rl.Sound,
+};
+
+pub const SpeedboostConfig = struct {
+    frame_len: u32,
+    frame_rows: f32,
+    frame_cols: f32,
+    frames: f32,
+    tex_x: f32,
+    tex_y: f32,
+    tex_w: f32,
+    tex_h: f32,
+    texture: rl.Texture,
+    sound: rl.Sound,
 };

@@ -57,11 +57,11 @@ pub fn main() !void {
     defer rl.unloadTexture(empty_wheel_texture);
     const x_wheel_texture = try rl.loadTexture("assets/circle_shield.png");
     defer rl.unloadTexture(x_wheel_texture);
-    const y_wheel_texture = try rl.loadTexture("assets/circle_y.png");
+    const y_wheel_texture = try rl.loadTexture("assets/circle_speed.png");
     defer rl.unloadTexture(y_wheel_texture);
     const r2_wheel_texture = try rl.loadTexture("assets/circle_bulletbomb.png");
     defer rl.unloadTexture(r2_wheel_texture);
-    const l1_wheel_texture = try rl.loadTexture("assets/circle_l1.png");
+    const l1_wheel_texture = try rl.loadTexture("assets/circle_portal.png");
     defer rl.unloadTexture(l1_wheel_texture);
     const l2_wheel_texture = try rl.loadTexture("assets/circle_l2.png");
     defer rl.unloadTexture(l2_wheel_texture);
@@ -74,7 +74,7 @@ pub fn main() !void {
     val.wheel_config.l2_texture = l2_wheel_texture;
 
     // Entities
-    const player_texture = try rl.loadTexture("assets/ship1.png");
+    const player_texture = try rl.loadTexture("assets/ship2.png");
     defer rl.unloadTexture(player_texture);
     val.player_config.texture = player_texture;
 
@@ -106,6 +106,14 @@ pub fn main() !void {
     const sword_texture = try rl.loadTexture("assets/sword1.png");
     defer rl.unloadTexture(sword_texture);
     val.sword_config.texture = sword_texture;
+
+    const portal_texture = try rl.loadTexture("assets/portal.png");
+    defer rl.unloadTexture(portal_texture);
+    val.portal_config.texture = portal_texture;
+
+    const speedboost_texture = try rl.loadTexture("assets/speed1.png");
+    defer rl.unloadTexture(speedboost_texture);
+    val.speedboost_config.texture = speedboost_texture;
 
     // Load sounds
     const bullet_sound = try rl.loadSound("sfx/laser1.wav");
@@ -140,6 +148,7 @@ pub fn main() !void {
     var enemies: obj.MaxArray(obj.Enemy) = .{ .list = &enemies_arr };
     var sword: obj.Sword = undefined;
     var bomb: obj.BulletBomb = undefined;
+    var portal: obj.Portal = undefined;
     var spawn_timer_e1: u32 = 0;
     var spawn_timer_e2: u32 = 0;
     var spawn_timer_e3: u32 = 0;
@@ -149,6 +158,8 @@ pub fn main() !void {
         ski.sword_skill,
         ski.bullet_bomb_skill,
         ski.shield_skill,
+        ski.portal_skill,
+        ski.speedboost_skill,
     };
 
     const skill_wheel = men.SkillWheel.init(val.wheel_config);
@@ -159,6 +170,7 @@ pub fn main() !void {
         .bomb_bullets = &bomb_bullets,
         .enemies = &enemies,
         .sword = &sword,
+        .portal = &portal,
         .bomb = &bomb,
         .spawn_timer_e1 = &spawn_timer_e1,
         .spawn_timer_e2 = &spawn_timer_e2,
@@ -237,19 +249,19 @@ pub fn main() !void {
                 // Spawn enemies
                 if (spawn_timer_e1 >= val.game_config.spawn_delay_e1) {
                     spawn_timer_e1 = 0;
-                    obj.Enemy.spawn(state, val.enemy11_config);
+                    obj.Enemy.spawn(state, val.enemy21_config);
                 }
                 if (spawn_timer_e2 >= val.game_config.spawn_delay_e2) {
                     spawn_timer_e2 = 0;
-                    obj.Enemy.spawn(state, val.enemy12_config);
+                    obj.Enemy.spawn(state, val.enemy22_config);
                 }
                 if (spawn_timer_e3 >= val.game_config.spawn_delay_e3) {
                     spawn_timer_e3 = 0;
-                    obj.Enemy.spawn(state, val.enemy13_config);
+                    obj.Enemy.spawn(state, val.enemy23_config);
                 }
                 if (spawn_timer_e4 >= val.game_config.spawn_delay_e4) {
                     spawn_timer_e4 = 0;
-                    obj.Enemy.spawn(state, val.enemy14_config);
+                    obj.Enemy.spawn(state, val.enemy24_config);
                 }
 
                 // Update skills
@@ -258,6 +270,7 @@ pub fn main() !void {
                 }
                 sword.update(player.drawable, state);
                 bomb.update(state);
+                portal.update(state);
                 for (0..bomb_bullets.max) |i| {
                     bomb_bullets.list[i].update(state);
                 }
@@ -294,6 +307,7 @@ pub fn main() !void {
                 sword.draw();
 
                 bomb.draw();
+                portal.draw();
                 for (0..bomb_bullets.max) |i| {
                     bomb_bullets.list[i].draw();
                 }
