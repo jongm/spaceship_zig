@@ -22,6 +22,13 @@ fn use_shoot(self: *Skill, state: con.GameState) void {
             state.player.drawable.facing,
         );
         state.bullets.add(new_bullet);
+        var active: usize = 0;
+        for (0..state.bullets.max) |i| {
+            if (state.bullets.list[i].active) {
+                active += 1;
+            }
+        }
+        std.debug.print("Bullets max {d}, all active {d}\n", .{ state.bullets.max, active });
         self.timer = 0;
         rl.playSound(val.bullet_config.sound);
     }
@@ -116,7 +123,7 @@ pub fn use_speedboost(self: *Skill, state: con.GameState) void {
     if (self.timer >= self.cooldown) {
         state.player.effect = .speedboost;
         state.player.effect_timer = 120;
-        state.player.speed += 10;
+        state.player.speed += val.speedboost_config.speed;
         self.timer = 0;
         state.player.effect_animation = obj.Animation{
             .drawable = .{

@@ -44,20 +44,18 @@ pub const Animation = struct {
 pub fn MaxArray(T: type) type {
     return struct {
         list: []T,
-        max: usize = 1,
+        max: usize = 0,
 
         pub fn add(self: *@This(), item: T) void {
-            if (self.max <= self.list.len) {
-                for (0..self.max + 1) |i| {
-                    const current = &self.list[i];
-                    if (!current.active) {
-                        current.* = item;
-                        if (i == self.max) {
-                            self.max += 1;
-                        }
-                        break;
-                    }
+            for (0..self.max) |i| {
+                if (!self.list[i].active) {
+                    self.list[i] = item;
+                    return;
                 }
+            }
+            if (self.max < self.list.len) {
+                self.list[self.max] = item;
+                self.max += 1;
             }
         }
     };
@@ -87,7 +85,7 @@ pub const Player = struct {
     effect_animation: Animation = undefined,
     skills: []ski.Skill = undefined,
 
-    pub fn init(config: con.PlayerConfig) @This() {
+    pub fn init(config: con.EntityConfig) @This() {
         const rect_source = rl.Rectangle.init(
             config.tex_x,
             config.tex_y,
@@ -210,8 +208,9 @@ pub const Enemy = struct {
     shoot_timer: u32 = 0,
     active: bool = false,
     sword_dmg_id: u32 = 0,
+    scoring: u32,
 
-    pub fn init(config: con.EnemyConfig, facing: f32, start_x: f32, start_y: f32) @This() {
+    pub fn init(config: con.EntityConfig, facing: f32, start_x: f32, start_y: f32) @This() {
         const rect_source = rl.Rectangle.init(
             config.tex_x,
             config.tex_y,
@@ -237,6 +236,7 @@ pub const Enemy = struct {
             .health = config.health,
             .damage = config.damage,
             .active = true,
+            .scoring = config.scoring,
         };
     }
 
@@ -255,7 +255,7 @@ pub const Enemy = struct {
         }
     }
 
-    pub fn spawn(state: con.GameState, config: con.EnemyConfig) void {
+    pub fn spawn(state: con.GameState, config: con.EntityConfig) void {
         const position = uti.get_random_border_position(
             val.game_config.map_width,
             val.game_config.map_height,
@@ -271,7 +271,7 @@ pub const Enemy = struct {
 
     pub fn die(self: *@This(), state: con.GameState) void {
         self.active = false;
-        state.player.score += 1;
+        state.player.score += self.scoring;
         // rl.playSound(val.enemy_config.death_sound);
     }
 
@@ -288,7 +288,7 @@ pub const BulletBomb = struct {
     active: bool,
     damage: u32,
 
-    pub fn init(config: con.BulletConfig, x: f32, y: f32, facing: f32) @This() {
+    pub fn init(config: con.EntityConfig, x: f32, y: f32, facing: f32) @This() {
         const rect_source = rl.Rectangle.init(
             config.tex_x,
             config.tex_y,
@@ -367,7 +367,7 @@ pub const Bullet = struct {
     active: bool,
     damage: u32,
 
-    pub fn init(config: con.BulletConfig, x: f32, y: f32, facing: f32) @This() {
+    pub fn init(config: con.EntityConfig, x: f32, y: f32, facing: f32) @This() {
         const rect_source = rl.Rectangle.init(
             config.tex_x,
             config.tex_y,
@@ -435,7 +435,7 @@ pub const Sword = struct {
 
     pub var sword_id: u32 = 1;
 
-    pub fn init(config: con.SwordConfig, origin: Drawable) @This() {
+    pub fn init(config: con.EntityConfig, origin: Drawable) @This() {
         var sword: @This() = .{
             .rects = undefined,
             .speed = config.speed,
@@ -521,7 +521,7 @@ pub const Portal = struct {
     active: bool,
     damage: u32,
 
-    pub fn init(config: con.PortalConfig, x: f32, y: f32) @This() {
+    pub fn init(config: con.EntityConfig, x: f32, y: f32) @This() {
         const rect_source = rl.Rectangle.init(
             config.tex_x,
             config.tex_y,

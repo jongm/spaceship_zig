@@ -57,90 +57,33 @@ pub const WheelConfig = struct {
     tex_h: f32,
 };
 
-pub const PlayerConfig = struct {
-    tex_x: f32,
-    tex_y: f32,
-    tex_w: f32,
-    tex_h: f32,
-    start_x: f32,
-    start_y: f32,
-    width: f32,
-    height: f32,
-    speed: f32,
-    health: u32,
-    texture: rl.Texture,
-    death_sound: rl.Sound,
-};
-
-pub const EnemyConfig = struct {
+pub const EntityConfig = struct {
+    // Drawable
     tex_x: f32,
     tex_y: f32,
     tex_w: f32,
     tex_h: f32,
     width: f32,
     height: f32,
-    speed: f32,
-    health: u32,
-    damage: u32,
-    shoot_delay: u32,
-    move_delay: u32,
     texture: rl.Texture,
-    death_sound: rl.Sound,
-};
-
-pub const BulletConfig = struct {
-    width: f32,
-    height: f32,
-    speed: f32,
-    tex_x: f32,
-    tex_y: f32,
-    tex_w: f32,
-    tex_h: f32,
-    damage: u32,
-    texture: rl.Texture,
-    sound: rl.Sound,
-};
-
-pub const SwordConfig = struct {
-    width: f32,
-    height: f32,
-    speed: f32,
-    tex_x: f32,
-    tex_y: f32,
-    tex_w: f32,
-    tex_h: f32,
-    gap: f32,
-    texture: rl.Texture,
-    sound: rl.Sound,
-    sword_dmg_id: u32 = 0,
-    damage: u32,
-};
-
-pub const PortalConfig = struct {
-    width: f32,
-    height: f32,
-    frame_len: u32,
-    frame_rows: f32,
-    frame_cols: f32,
-    frames: f32,
-    tex_x: f32,
-    tex_y: f32,
-    tex_w: f32,
-    tex_h: f32,
-    damage: u32,
-    texture: rl.Texture,
-    sound: rl.Sound,
-};
-
-pub const SpeedboostConfig = struct {
-    frame_len: u32,
-    frame_rows: f32,
-    frame_cols: f32,
-    frames: f32,
-    tex_x: f32,
-    tex_y: f32,
-    tex_w: f32,
-    tex_h: f32,
-    texture: rl.Texture,
-    sound: rl.Sound,
+    gap: f32 = undefined,
+    // Animation
+    frame_len: u32 = undefined,
+    frame_rows: f32 = undefined,
+    frame_cols: f32 = undefined,
+    frames: f32 = undefined,
+    // Effects
+    sound: rl.Sound = undefined,
+    //Stats
+    speed: f32 = undefined,
+    health: u32 = undefined,
+    // Player
+    start_x: f32 = undefined,
+    start_y: f32 = undefined,
+    // Enemies and attacks
+    damage: u32 = undefined,
+    scoring: u32 = undefined,
+    shoot_delay: u32 = undefined,
+    move_delay: u32 = undefined,
+    death_sound: rl.Sound = undefined,
 };

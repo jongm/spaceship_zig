@@ -38,7 +38,7 @@ pub var wheel_config = con.WheelConfig{
     .circle_gap = 5,
 };
 
-pub var player_config = con.PlayerConfig{
+pub var player_config = con.EntityConfig{
     .tex_x = 0,
     .tex_y = 0,
     .tex_w = 242, //392,
@@ -53,7 +53,7 @@ pub var player_config = con.PlayerConfig{
     .death_sound = undefined,
 };
 
-pub var bullet_config = con.BulletConfig{
+pub var bullet_config = con.EntityConfig{
     .height = 30,
     .width = 20,
     .speed = 20,
@@ -66,7 +66,7 @@ pub var bullet_config = con.BulletConfig{
     .sound = undefined,
 };
 
-pub var bullet_bomb_config = con.BulletConfig{
+pub var bullet_bomb_config = con.EntityConfig{
     .height = 45,
     .width = 30,
     .speed = 10,
@@ -79,7 +79,7 @@ pub var bullet_bomb_config = con.BulletConfig{
     .sound = undefined,
 };
 
-pub var bullet_bomb_bullet_config = con.BulletConfig{
+pub var bullet_bomb_bullet_config = con.EntityConfig{
     .height = 30,
     .width = 20,
     .speed = 20,
@@ -92,7 +92,7 @@ pub var bullet_bomb_bullet_config = con.BulletConfig{
     .sound = undefined,
 };
 
-pub var sword_config = con.SwordConfig{
+pub var sword_config = con.EntityConfig{
     .height = 150,
     .width = 20,
     .speed = 12,
@@ -106,7 +106,7 @@ pub var sword_config = con.SwordConfig{
     .sound = undefined,
 };
 
-pub var portal_config = con.PortalConfig{
+pub var portal_config = con.EntityConfig{
     .height = 120,
     .width = 120,
     .tex_x = 0,
@@ -122,21 +122,24 @@ pub var portal_config = con.PortalConfig{
     .sound = undefined,
 };
 
-pub var speedboost_config = con.SpeedboostConfig{
+pub var speedboost_config = con.EntityConfig{
     .tex_x = 0,
     .tex_y = 0,
     .tex_h = 128,
     .tex_w = 128,
+    .width = 0,
+    .height = 0,
     .frame_cols = 5,
     .frame_rows = 2,
     .frames = 8,
     .frame_len = 5,
+    .speed = 5, // effect
     .texture = undefined,
     .sound = undefined,
 };
 
 // ENEMIES
-pub var enemy11_config = con.EnemyConfig{
+pub var enemy11_config = con.EntityConfig{
     .tex_x = 36,
     .tex_y = 34,
     .tex_w = 56,
@@ -150,9 +153,10 @@ pub var enemy11_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 1,
 };
 
-pub var enemy12_config = con.EnemyConfig{
+pub var enemy12_config = con.EntityConfig{
     .tex_x = 159,
     .tex_y = 16,
     .tex_w = 66 * 1.1,
@@ -166,9 +170,10 @@ pub var enemy12_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 2,
 };
 
-pub var enemy13_config = con.EnemyConfig{
+pub var enemy13_config = con.EntityConfig{
     .tex_x = 287,
     .tex_y = 6,
     .tex_w = 66,
@@ -182,9 +187,10 @@ pub var enemy13_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 3,
 };
 
-pub var enemy14_config = con.EnemyConfig{
+pub var enemy14_config = con.EntityConfig{
     .tex_x = 403,
     .tex_y = 2,
     .tex_w = 90,
@@ -198,9 +204,10 @@ pub var enemy14_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 5,
 };
 
-pub var enemy21_config = con.EnemyConfig{
+pub var enemy21_config = con.EntityConfig{
     .tex_x = 30,
     .tex_y = 154,
     .tex_w = 69,
@@ -214,9 +221,10 @@ pub var enemy21_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 1,
 };
 
-pub var enemy22_config = con.EnemyConfig{
+pub var enemy22_config = con.EntityConfig{
     .tex_x = 153,
     .tex_y = 153,
     .tex_w = 78,
@@ -230,9 +238,10 @@ pub var enemy22_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 2,
 };
 
-pub var enemy23_config = con.EnemyConfig{
+pub var enemy23_config = con.EntityConfig{
     .tex_x = 277,
     .tex_y = 145,
     .tex_w = 86,
@@ -246,9 +255,10 @@ pub var enemy23_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 3,
 };
 
-pub var enemy24_config = con.EnemyConfig{
+pub var enemy24_config = con.EntityConfig{
     .tex_x = 403,
     .tex_y = 139,
     .tex_w = 90,
@@ -262,9 +272,10 @@ pub var enemy24_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 5,
 };
 
-pub var enemy31_config = con.EnemyConfig{
+pub var enemy31_config = con.EntityConfig{
     .tex_x = 31,
     .tex_y = 279,
     .tex_w = 66,
@@ -278,9 +289,10 @@ pub var enemy31_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 1,
 };
 
-pub var enemy32_config = con.EnemyConfig{
+pub var enemy32_config = con.EntityConfig{
     .tex_x = 155,
     .tex_y = 270,
     .tex_w = 74,
@@ -294,9 +306,10 @@ pub var enemy32_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 2,
 };
 
-pub var enemy33_config = con.EnemyConfig{
+pub var enemy33_config = con.EntityConfig{
     .tex_x = 269,
     .tex_y = 270,
     .tex_w = 102,
@@ -310,9 +323,10 @@ pub var enemy33_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 3,
 };
 
-pub var enemy34_config = con.EnemyConfig{
+pub var enemy34_config = con.EntityConfig{
     .tex_x = 397,
     .tex_y = 270,
     .tex_w = 102,
@@ -326,9 +340,10 @@ pub var enemy34_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 5,
 };
 
-pub var enemy41_config = con.EnemyConfig{
+pub var enemy41_config = con.EntityConfig{
     .tex_x = 0,
     .tex_y = 0,
     .tex_w = 402,
@@ -342,9 +357,10 @@ pub var enemy41_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 1,
 };
 
-pub var enemy42_config = con.EnemyConfig{
+pub var enemy42_config = con.EntityConfig{
     .tex_x = 0,
     .tex_y = 0,
     .tex_w = 402,
@@ -358,9 +374,10 @@ pub var enemy42_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 2,
 };
 
-pub var enemy43_config = con.EnemyConfig{
+pub var enemy43_config = con.EntityConfig{
     .tex_x = 0,
     .tex_y = 0,
     .tex_w = 402,
@@ -374,9 +391,10 @@ pub var enemy43_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 3,
 };
 
-pub var enemy44_config = con.EnemyConfig{
+pub var enemy44_config = con.EntityConfig{
     .tex_x = 0,
     .tex_y = 0,
     .tex_w = 402,
@@ -390,4 +408,5 @@ pub var enemy44_config = con.EnemyConfig{
     .shoot_delay = 200,
     .texture = undefined,
     .death_sound = undefined,
+    .scoring = 5,
 };

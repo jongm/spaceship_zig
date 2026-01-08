@@ -7,31 +7,15 @@ const std = @import("std");
 const math = std.math;
 
 pub fn reset_game_status(state: con.GameState, skills: []ski.Skill) void {
-    for (state.bullets.list, 0..) |_, i| {
-        state.bullets.list[i] = .{
-            .drawable = undefined,
-            .speed = undefined,
-            .active = false,
-            .damage = undefined,
-        };
-    }
-    for (state.enemies.list, 0..) |_, i| {
-        state.enemies.list[i] = .{
-            .drawable = undefined,
-            .speed = undefined,
-            .move_delay = undefined,
-            .shoot_delay = undefined,
-            .active = false,
-            .health = undefined,
-            .damage = undefined,
-        };
-    }
+    state.bullets.max = 0;
+    state.bomb_bullets.max = 0;
+    state.enemies.max = 0;
+
     state.spawn_timer_e1.* = 0;
     state.spawn_timer_e2.* = 0;
     state.spawn_timer_e3.* = 0;
     state.spawn_timer_e4.* = 0;
-    const player = obj.Player.init(val.player_config);
-    state.player.* = player;
+    state.player.* = obj.Player.init(val.player_config);
     state.player.skills = skills;
     for (state.player.skills) |*skill| {
         skill.timer = skill.cooldown;

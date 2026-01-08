@@ -140,11 +140,11 @@ pub fn main() !void {
 
     // Create objects
     var player: obj.Player = undefined;
-    var bullets_arr: [10]obj.Bullet = undefined;
+    var bullets_arr: [15]obj.Bullet = undefined;
     var bullets: obj.MaxArray(obj.Bullet) = .{ .list = &bullets_arr };
     var bomb_bullets_arr: [20]obj.Bullet = undefined;
     var bomb_bullets: obj.MaxArray(obj.Bullet) = .{ .list = &bomb_bullets_arr };
-    var enemies_arr: [50]obj.Enemy = undefined;
+    var enemies_arr: [80]obj.Enemy = undefined;
     var enemies: obj.MaxArray(obj.Enemy) = .{ .list = &enemies_arr };
     var sword: obj.Sword = undefined;
     var bomb: obj.BulletBomb = undefined;
