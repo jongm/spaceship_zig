@@ -1,18 +1,14 @@
 const rl = @import("raylib");
 const con = @import("config.zig");
 const uti = @import("utils.zig");
+const val = @import("values.zig");
 const obj = @import("objects.zig");
 const std = @import("std");
 
 pub const SkillWheel = struct {
-    rect_up: obj.Drawable,
-    // rect_down: obj.Drawable,
-    rect_left: obj.Drawable,
-    rect_right: obj.Drawable,
-    rect_l1: obj.Drawable,
-    rect_l2: obj.Drawable,
-    rect_r1: obj.Drawable,
-    rect_r2: obj.Drawable,
+    rect_source: rl.Rectangle,
+    rects_dest: [7]rl.Rectangle,
+    circle_texture: rl.Texture,
 
     pub fn init(config: con.WheelConfig) @This() {
         const rect_source = rl.Rectangle.init(
@@ -57,13 +53,6 @@ pub const SkillWheel = struct {
             config.circle_side,
         );
 
-        // const rect_dest_down = rl.Rectangle.init(
-        //     config.start_x + config.circle_side + config.circle_gap,
-        //     config.start_y + config.circle_side * 3 + config.circle_gap * 1,
-        //     config.circle_side,
-        //     config.circle_side,
-        // );
-
         const rect_dest_left = rl.Rectangle.init(
             config.start_x + config.circle_side / 2 + config.circle_gap,
             config.start_y + config.circle_side * 2 + config.circle_gap * 2,
@@ -79,92 +68,67 @@ pub const SkillWheel = struct {
         );
 
         return .{
-            .rect_up = .{
-                .rect_dest = rect_dest_up,
-                .rect_source = rect_source,
-                .texture = config.up_texture,
-                .facing = 0,
+            .rect_source = rect_source,
+            .rects_dest = .{
+                rect_dest_left,
+                rect_dest_up,
+                rect_dest_right,
+                rect_dest_r1,
+                rect_dest_r2,
+                rect_dest_l1,
+                rect_dest_l2,
             },
-            // .rect_down = .{
-            //     .rect_dest = rect_dest_down,
-            //     .rect_source = rect_source,
-            //     .texture = config.down_texture,
-            //     .facing = 0,
-            // },
-            .rect_left = .{
-                .rect_dest = rect_dest_left,
-                .rect_source = rect_source,
-                .texture = config.left_texture,
-                .facing = 0,
-            },
-            .rect_right = .{
-                .rect_dest = rect_dest_right,
-                .rect_source = rect_source,
-                .texture = config.right_texture,
-                .facing = 0,
-            },
-            .rect_l1 = .{
-                .rect_dest = rect_dest_l1,
-                .rect_source = rect_source,
-                .texture = config.l1_texture,
-                .facing = 0,
-            },
-            .rect_l2 = .{
-                .rect_dest = rect_dest_l2,
-                .rect_source = rect_source,
-                .texture = config.l2_texture,
-                .facing = 0,
-            },
-            .rect_r1 = .{
-                .rect_dest = rect_dest_r1,
-                .rect_source = rect_source,
-                .texture = config.r1_texture,
-                .facing = 0,
-            },
-            .rect_r2 = .{
-                .rect_dest = rect_dest_r2,
-                .rect_source = rect_source,
-                .texture = config.r2_texture,
-                .facing = 0,
-            },
+            .circle_texture = config.circle_texture,
         };
     }
 
     pub fn draw(self: @This(), state: con.GameState) void {
-        uti.draw_object(self.rect_up);
-        // uti.draw_object(self.rect_down);
-        uti.draw_object(self.rect_left);
-        uti.draw_object(self.rect_right);
-        uti.draw_object(self.rect_l1);
-        uti.draw_object(self.rect_l2);
-        uti.draw_object(self.rect_r1);
-        uti.draw_object(self.rect_r2);
-
         for (state.player.skills, 0..) |skill, i| {
-            if (skill.timer < skill.cooldown) {
-                const rect = switch (i) {
-                    1 => self.rect_r1.rect_dest,
-                    2 => self.rect_r2.rect_dest,
-                    3 => self.rect_left.rect_dest,
-                    4 => self.rect_l1.rect_dest,
-                    5 => self.rect_up.rect_dest,
-                    else => continue,
-                };
-                const center = rl.Vector2{
-                    .x = rect.x + rect.width / 2,
-                    .y = rect.y + rect.height / 2,
-                };
-                const ready: f32 = @as(f32, @floatFromInt(skill.timer)) / @as(f32, @floatFromInt(skill.cooldown));
-                const end_angle = 360.0 * ready - 90.0;
-                rl.drawRing(
-                    center,
-                    0,
-                    rect.width / 2,
-                    270.0,
-                    end_angle,
-                    0,
-                    rl.colorAlpha(rl.Color.black, 0.7),
-                );
+            uti.draw_object(.{
+                .rect_source = .{
+                    .x = skill.icon_config.tex_x,
+                    .y = skill.icon_config.tex_y,
+                    .width = skill.icon_config.tex_w,
+                    .height = skill.icon_config.tex_h,
+                },
+                .rect_dest = .{
+                    .x = self.rects_dest[i].x + 15,
+                    .y = self.rects_dest[i].y + 15,
+                    .width = val.wheel_config.circle_side / 2,
+                    .height = val.wheel_config.circle_side / 2,
+                },
+                .texture = skill.icon_config.texture,
+                .facing = 45,
+            });
+
+            for (self.rects_dest) |dest| {
+                uti.draw_object(.{
+                    .rect_source = self.rect_source,
+                    .rect_dest = dest,
+                    .texture = self.circle_texture,
+                    .facing = 0,
+                });
+            }
+
+            if (!skill.is_toggled) {
+                if (skill.timer < skill.cooldown) {
+                    const rect = self.rects_dest[i];
+                    const center = rl.Vector2{
+                        .x = rect.x + rect.width / 2,
+                        .y = rect.y + rect.height / 2,
+                    };
+                    const ready: f32 = @as(f32, @floatFromInt(skill.timer)) / @as(f32, @floatFromInt(skill.cooldown));
+                    const end_angle = 360.0 * ready - 90.0;
+                    rl.drawRing(
+                        center,
+                        0,
+                        rect.width / 2,
+                        270.0,
+                        end_angle,
+                        0,
+                        rl.colorAlpha(rl.Color.red, 0.7),
+                    );
+                }
             }
         }
     }

@@ -5,6 +5,16 @@ const obj = @import("objects.zig");
 const val = @import("values.zig");
 const std = @import("std");
 
+pub const skill_buttons = [_]rl.GamepadButton{
+    rl.GamepadButton.right_face_left,
+    rl.GamepadButton.right_face_up,
+    rl.GamepadButton.right_face_right,
+    rl.GamepadButton.right_trigger_1,
+    rl.GamepadButton.right_trigger_2,
+    rl.GamepadButton.left_trigger_1,
+        // rl.GamepadButton.left_trigger_2,
+};
+
 pub fn handle_controls(state: con.GameState) void {
     // Left joystick - Movement
     const leftx = rl.getGamepadAxisMovement(0, rl.GamepadAxis.left_x);
@@ -29,33 +39,15 @@ pub fn handle_controls(state: con.GameState) void {
         state.player.drawable.facing = turn_target;
     }
 
-    if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_face_right)) {
-        const skill = &state.player.skills[0];
-        skill.toggled = !skill.toggled;
-    }
-
-    if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_trigger_1)) {
-        const skill = &state.player.skills[1];
-        skill.use(skill, state);
-    }
-
-    if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_trigger_2)) {
-        const skill = &state.player.skills[2];
-        skill.use(skill, state);
-    }
-
-    if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_face_left)) {
-        const skill = &state.player.skills[3];
-        skill.use(skill, state);
-    }
-
-    if (rl.isGamepadButtonPressed(0, rl.GamepadButton.left_trigger_1)) {
-        const skill = &state.player.skills[4];
-        skill.use(skill, state);
-    }
-
-    if (rl.isGamepadButtonPressed(0, rl.GamepadButton.right_face_up)) {
-        const skill = &state.player.skills[5];
-        skill.use(skill, state);
+    for (skill_buttons, 0..) |button, i| {
+        if (rl.isGamepadButtonPressed(0, button)) {
+            const skill = &state.player.skills[i];
+            if (skill.is_toggled) {
+                std.debug.print("Llega. Toggled {any}\n", .{skill.toggled});
+                skill.toggled = !skill.toggled;
+            } else {
+                skill.use(skill, state);
+            }
+        }
     }
 }

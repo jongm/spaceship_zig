@@ -8,8 +8,9 @@ const std = @import("std");
 pub const Skill = struct {
     cooldown: u32,
     timer: u32,
-    icon: rl.Texture,
+    is_toggled: bool = false,
     toggled: bool = false,
+    icon_config: *con.EntityConfig,
     use: *const fn (self: *@This(), state: con.GameState) void,
 };
 
@@ -28,7 +29,6 @@ fn use_shoot(self: *Skill, state: con.GameState) void {
                 active += 1;
             }
         }
-        std.debug.print("Bullets max {d}, all active {d}\n", .{ state.bullets.max, active });
         self.timer = 0;
         rl.playSound(val.bullet_config.sound);
     }
@@ -37,7 +37,8 @@ fn use_shoot(self: *Skill, state: con.GameState) void {
 pub var shoot_skill = Skill{
     .cooldown = 20,
     .timer = 20,
-    .icon = undefined,
+    .is_toggled = true,
+    .icon_config = &val.bullet_config,
     .use = use_shoot,
 };
 
@@ -54,16 +55,16 @@ pub fn use_sword(self: *Skill, state: con.GameState) void {
 }
 
 pub var sword_skill = Skill{
-    .cooldown = 150,
-    .timer = 150,
-    .icon = undefined,
+    .cooldown = 300,
+    .timer = 300,
+    .icon_config = &val.sword_config,
     .use = use_sword,
 };
 
 pub fn use_shield(self: *Skill, state: con.GameState) void {
     if (self.timer >= self.cooldown) {
         state.player.immune = true;
-        state.player.immune_timer = 120;
+        state.player.immune_timer = val.shield_config.damage;
         state.player.dmg_status = .shielded;
         self.timer = 0;
         // rl.playSound(val.sword_config.sound);
@@ -71,9 +72,9 @@ pub fn use_shield(self: *Skill, state: con.GameState) void {
 }
 
 pub var shield_skill = Skill{
-    .cooldown = 400,
-    .timer = 400,
-    .icon = undefined,
+    .cooldown = 500,
+    .timer = 500,
+    .icon_config = &val.shield_config,
     .use = use_shield,
 };
 
@@ -92,9 +93,9 @@ pub fn use_bullet_bomb(self: *Skill, state: con.GameState) void {
 }
 
 pub var bullet_bomb_skill = Skill{
-    .cooldown = 300,
-    .timer = 300,
-    .icon = undefined,
+    .cooldown = 500,
+    .timer = 500,
+    .icon_config = &val.bullet_bomb_config,
     .use = use_bullet_bomb,
 };
 
@@ -115,7 +116,7 @@ pub fn use_portal(self: *Skill, state: con.GameState) void {
 pub var portal_skill = Skill{
     .cooldown = 200,
     .timer = 200,
-    .icon = undefined,
+    .icon_config = &val.portal_config,
     .use = use_portal,
 };
 
@@ -155,6 +156,6 @@ pub fn use_speedboost(self: *Skill, state: con.GameState) void {
 pub var speedboost_skill = Skill{
     .cooldown = 500,
     .timer = 500,
-    .icon = undefined,
+    .icon_config = &val.speedboost_config,
     .use = use_speedboost,
 };

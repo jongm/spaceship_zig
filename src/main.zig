@@ -49,29 +49,9 @@ pub fn main() !void {
     }
 
     // Skill Wheel
-    const sword_wheel_texture = try rl.loadTexture("assets/circle_sword.png");
-    defer rl.unloadTexture(sword_wheel_texture);
-    const bullet_wheel_texture = try rl.loadTexture("assets/circle_bullet.png");
-    defer rl.unloadTexture(bullet_wheel_texture);
     const empty_wheel_texture = try rl.loadTexture("assets/circle_empty.png");
     defer rl.unloadTexture(empty_wheel_texture);
-    const x_wheel_texture = try rl.loadTexture("assets/circle_shield.png");
-    defer rl.unloadTexture(x_wheel_texture);
-    const y_wheel_texture = try rl.loadTexture("assets/circle_speed.png");
-    defer rl.unloadTexture(y_wheel_texture);
-    const r2_wheel_texture = try rl.loadTexture("assets/circle_bulletbomb.png");
-    defer rl.unloadTexture(r2_wheel_texture);
-    const l1_wheel_texture = try rl.loadTexture("assets/circle_portal.png");
-    defer rl.unloadTexture(l1_wheel_texture);
-    const l2_wheel_texture = try rl.loadTexture("assets/circle_l2.png");
-    defer rl.unloadTexture(l2_wheel_texture);
-    val.wheel_config.up_texture = y_wheel_texture;
-    val.wheel_config.left_texture = x_wheel_texture;
-    val.wheel_config.right_texture = bullet_wheel_texture;
-    val.wheel_config.r1_texture = sword_wheel_texture;
-    val.wheel_config.r2_texture = r2_wheel_texture;
-    val.wheel_config.l1_texture = l1_wheel_texture;
-    val.wheel_config.l2_texture = l2_wheel_texture;
+    val.wheel_config.circle_texture = empty_wheel_texture;
 
     // Entities
     const player_texture = try rl.loadTexture("assets/ship2.png");
@@ -100,16 +80,23 @@ pub fn main() !void {
     const bullets_texture = try rl.loadTexture("assets/bullets1.png");
     defer rl.unloadTexture(bullets_texture);
     val.bullet_config.texture = bullets_texture;
-    val.bullet_bomb_config.texture = bullets_texture;
     val.bullet_bomb_bullet_config.texture = bullets_texture;
 
     const sword_texture = try rl.loadTexture("assets/sword1.png");
     defer rl.unloadTexture(sword_texture);
     val.sword_config.texture = sword_texture;
 
+    const bomb_texture = try rl.loadTexture("assets/bomb1.png");
+    defer rl.unloadTexture(bomb_texture);
+    val.bullet_bomb_config.texture = bomb_texture;
+
     const portal_texture = try rl.loadTexture("assets/portal.png");
     defer rl.unloadTexture(portal_texture);
     val.portal_config.texture = portal_texture;
+
+    const shield_texture = try rl.loadTexture("assets/shield1.png");
+    defer rl.unloadTexture(shield_texture);
+    val.shield_config.texture = shield_texture;
 
     const speedboost_texture = try rl.loadTexture("assets/speed1.png");
     defer rl.unloadTexture(speedboost_texture);
@@ -142,7 +129,7 @@ pub fn main() !void {
     var player: obj.Player = undefined;
     var bullets_arr: [15]obj.Bullet = undefined;
     var bullets: obj.MaxArray(obj.Bullet) = .{ .list = &bullets_arr };
-    var bomb_bullets_arr: [20]obj.Bullet = undefined;
+    var bomb_bullets_arr: [30]obj.Bullet = undefined;
     var bomb_bullets: obj.MaxArray(obj.Bullet) = .{ .list = &bomb_bullets_arr };
     var enemies_arr: [80]obj.Enemy = undefined;
     var enemies: obj.MaxArray(obj.Enemy) = .{ .list = &enemies_arr };
@@ -154,12 +141,12 @@ pub fn main() !void {
     var spawn_timer_e3: u32 = 0;
     var spawn_timer_e4: u32 = 0;
     var player_skills = [_]ski.Skill{
+        ski.shield_skill,
+        ski.speedboost_skill,
         ski.shoot_skill,
         ski.sword_skill,
         ski.bullet_bomb_skill,
-        ski.shield_skill,
         ski.portal_skill,
-        ski.speedboost_skill,
     };
 
     const skill_wheel = men.SkillWheel.init(val.wheel_config);
@@ -317,7 +304,7 @@ pub fn main() !void {
                 const health_text = rl.textFormat("Health: %d", .{player.health});
                 rl.drawText(health_text, 10, 10, 40, rl.Color.green);
                 const score_text = rl.textFormat("Score: %d", .{player.score});
-                rl.drawText(score_text, 1400, 10, 40, rl.Color.green);
+                rl.drawText(score_text, val.game_config.screen_width - 300, 10, 40, rl.Color.green);
 
                 skill_wheel.draw(state);
             },

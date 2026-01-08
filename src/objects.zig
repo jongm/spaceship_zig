@@ -116,8 +116,10 @@ pub const Player = struct {
         if (self.health == 0) {
             self.die(state);
         }
-        if (self.skills[0].toggled) {
-            self.skills[0].use(&self.skills[0], state);
+        for (self.skills) |*skill| {
+            if (skill.toggled) {
+                skill.use(skill, state);
+            }
         }
         switch (self.dmg_status) {
             .shielded => {
@@ -336,7 +338,7 @@ pub const BulletBomb = struct {
 
     pub fn explode(self: *@This(), state: con.GameState) void {
         self.active = false;
-        const amount = 16;
+        const amount = 24;
         for (0..amount) |i| {
             const bomb_bullet = &state.bomb_bullets.list[i];
             const facing: f32 = @floatFromInt(i * (360 / amount));
